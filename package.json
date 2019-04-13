@@ -1,0 +1,23 @@
+{
+  "name": "piaoren",
+  "version": "0.0.1",
+  "description": "Very fast ES6+  module tools",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cd src && node pr1.js demo/index.html"
+  },
+  "author": "BarZu",
+  "license": "MIT",
+  "dependencies": {
+    "rollup": "^1.10.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0"
+  }
+}
