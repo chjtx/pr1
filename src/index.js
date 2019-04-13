@@ -121,8 +121,7 @@ function switchExport (txt, url) {
 }
 
 module.exports = {
-  parse (txt, url, config) {
-    let code = parseModule(txt, url)
+  parse (code, url, config) {
     const id = path.resolve(cwd, '.' + url)
     // 执行rollup插件的transform
     if (config && config.rollupConfig && config.rollupConfig.plugins) {
@@ -136,6 +135,6 @@ module.exports = {
         return code
       }, code)
     }
-    return code
+    return parseModule(code, url)
   }
 }

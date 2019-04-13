@@ -25,25 +25,19 @@
     return path.replace(window.location.origin, '')
   }
 
-  function loadScript (src, parentPath, uniquePath, callback) {
+  // 加截javascript
+  function loadScript (src, parentPath, uniquePath) {
     const script = document.createElement('script')
     script.src = src
-    script.onload = (function (src, p) {
-      return function () {
-        cache[src].depend--
-        if (!cache[p] || cache[p].depend === 0) {
-          callback(pr1.modules[p])
-        }
+    script.onload = function () {
+      if (cache[uniquePath].depend === 0) {
+        cache[uniquePath].resolve(pr1.modules[uniquePath])
       }
-    })(parentPath, uniquePath)
+    }
     script.onerror = function () {
       console.error(`Has error on [${parentPath}]. Load [${uniquePath}] fail.`)
     }
     document.head.appendChild(script)
-  }
-
-  function loadOther () {
-    
   }
 
   // pr1
@@ -88,15 +82,16 @@
 
       return new Promise(resolve => {
         const src = uniquePath + (uniquePath.indexOf('?') === -1 ? '?' : '&') + 'pr1_module=1'
-        if (/\.js$/.test(uniquePath)) {
-          loadScript(src, parentPath, uniquePath, (rs) => {
-            resolve(rs)
-          })
-        } else {
-          loadOther(src, parentPath, uniquePath, (rs) => {
-            resolve(rs)
-          })
+        cache[uniquePath].resolve = (rs) => {
+          resolve(rs)
+          setTimeout(() => {
+            cache[uniquePath].parent.depend--
+            if (cache[uniquePath].parent.depend === 0 && cache[uniquePath].parent.resolve) {
+              cache[uniquePath].parent.resolve(pr1.modules[cache[uniquePath].parent.src])
+            }
+          }, 0)
         }
+        loadScript(src, parentPath, uniquePath)
       })
     },
     // require
