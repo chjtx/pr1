@@ -1,6 +1,5 @@
 (function (win) {
   const cache = {}
-  let currentScript = null
 
   function dirname (p) {
     return p.substr(0, p.lastIndexOf('/'))
@@ -26,39 +25,81 @@
     return path.replace(window.location.origin, '')
   }
 
+  function loadScript (src, parentPath, uniquePath, callback) {
+    const script = document.createElement('script')
+    script.src = src
+    script.onload = (function (src, p) {
+      return function () {
+        cache[src].depend--
+        if (!cache[p] || cache[p].depend === 0) {
+          callback(pr1.modules[p])
+        }
+      }
+    })(parentPath, uniquePath)
+    script.onerror = function () {
+      console.error(`Has error on [${parentPath}]. Load [${uniquePath}] fail.`)
+    }
+    document.head.appendChild(script)
+  }
+
+  function loadOther () {
+    
+  }
+
   // pr1
   const pr1 = {
+    // modules
     modules: {},
-    import (path) {
+    // import
+    import (path, parentPath) {
       const uniquePath = resolvePath(path)
 
       if (pr1.modules[uniquePath]) {
         return pr1.modules[uniquePath]
       }
-
-      currentScript = document.currentScript.src.replace(document.location.origin, '')
-      if (!cache[currentScript]) {
-        cache[currentScript] = {
-          src: currentScript,
-          depend: 0
+      if (!cache[parentPath]) {
+        cache[parentPath] = {
+          src: parentPath,
+          depend: 0,
+          children: []
         }
       }
-      cache[currentScript].depend++
+      if (!cache[uniquePath]) {
+        cache[uniquePath] = {
+          src: uniquePath,
+          depend: 0,
+          parent: cache[parentPath],
+          children: []
+        }
+      }
+      cache[parentPath].children.push(cache[uniquePath])
+      cache[parentPath].depend++
+
+      // 检测是否存在循环引用
+      let currentCheck = cache[parentPath]
+      const loopQueue = [parentPath, uniquePath]
+      while (currentCheck.parent) {
+        loopQueue.unshift(currentCheck.parent.src)
+        if (currentCheck.parent.src === uniquePath) {
+          throw new Error(`Infinite loop error occurred. [${loopQueue.join(' -> ')}]`)
+        }
+        currentCheck = currentCheck.parent
+      }
 
       return new Promise(resolve => {
-        const script = document.createElement('script')
-        script.src = uniquePath
-        script.onload = (function (src, p) {
-          return function () {
-            cache[src].depend--
-            if (!cache[p] || cache[p].depend === 0) {
-              resolve(pr1.modules[p])
-            }
-          }
-        })(currentScript, uniquePath)
-        document.head.appendChild(script)
+        const src = uniquePath + (uniquePath.indexOf('?') === -1 ? '?' : '&') + 'pr1_module=1'
+        if (/\.js$/.test(uniquePath)) {
+          loadScript(src, parentPath, uniquePath, (rs) => {
+            resolve(rs)
+          })
+        } else {
+          loadOther(src, parentPath, uniquePath, (rs) => {
+            resolve(rs)
+          })
+        }
       })
     },
+    // require
     require () {
 
     }

@@ -12,11 +12,13 @@ npm i -D -g pr1
 pr1 8686
 pr1 --config="./config.js"
 pr1 build index.html
-pr1 build index.html --config="./config.js" 
+pr1 build index.html --config="./config.js"
 pr1 build index.html --config="./config.js" --out="./dist/"
 ```
 
 ## 配置
+
+.pr1.config.js
 
 ```js
 module.exports = {
@@ -59,7 +61,7 @@ pr1.require(`../xxx.js`, () => {
 可植入到 http.server、express 和 koa，方便开发同源后端接口
 
 ```js
-const pr1 = require('piaoren')
+const pr1 = require('pr1')
 const body = readFileSync('./file.js')
 
 // http.server

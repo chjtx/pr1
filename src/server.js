@@ -1,6 +1,6 @@
 const http = require('http')
 const path = require('path')
-const url = require('url')
+const { URL } = require('url')
 const fs = require('fs')
 const pr1 = require('./index.js')
 
@@ -26,9 +26,21 @@ const mime = {
   'xml': 'text/xml'
 }
 
-module.exports = function server (port) {
+// 浏览器端所需文件
+const client = fs.readFileSync(path.resolve(__dirname, './client.js')).toString()
+
+module.exports = function server (port, config) {
   const server = http.createServer((req, res) => {
-    const parseURL = url.parse(req.url)
+    let isPr1Module = false
+    if (req.url.indexOf('pr1_module=1') > -1) {
+      isPr1Module = true
+    }
+    if (req.url === '/pr1-client.js') {
+      res.end(client)
+      return
+    }
+
+    const parseURL = new URL(req.url, 'http://localhost/')
     let pathname = parseURL.pathname
     if (/\/$/.test(pathname)) {
       pathname = pathname + 'index.html'
@@ -51,12 +63,15 @@ module.exports = function server (port) {
       }
       // 200
       res.writeHead(200, { 'Content-Type': contentType })
-      if (ext === 'js') {
-        res.write(pr1.parse(file.toString(), false, req.url))
-      } else if (ext === 'html') {
-        res.write(pr1.parse(file.toString(), true))
+      if (isPr1Module) {
+        // 飘刃模块
+        res.write(pr1.parse(file.toString(), pathname, config))
+      } else if (contentType === 'text/html') {
+        // 普通html文件
+        res.write(file.toString().replace(/(<head>[\n\r]+)/, `$1  <script src="/pr1-client.js"></script>\n`))
       } else {
-        res.write(file, 'binary')
+        // 其它文件
+        res.write(file)
       }
       res.end()
     } else {
@@ -67,5 +82,5 @@ module.exports = function server (port) {
     }
   })
   server.listen(port)
-  console.log('piaoren server run on port: ' + port)
+  console.log('pr1 server run on port: ' + port)
 }
