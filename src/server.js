@@ -2,7 +2,7 @@ const http = require('http')
 const path = require('path')
 const { URL } = require('url')
 const fs = require('fs')
-const pr1 = require('./index.js')
+const { parsePr1, parseNode } = require('./parse.js')
 
 const cwd = process.cwd()
 const mime = {
@@ -30,10 +30,13 @@ const mime = {
 const client = fs.readFileSync(path.resolve(__dirname, './client.js')).toString()
 
 module.exports = function server (port, config) {
-  const server = http.createServer((req, res) => {
+  const server = http.createServer(async (req, res) => {
     let isPr1Module = false
     if (req.url.indexOf('pr1_module=1') > -1) {
       isPr1Module = true
+    } else if (req.url.indexOf('node_module=1') > -1) {
+      res.end(parseNode(req.url.slice(1).split('?')[0]))
+      return
     }
     if (req.url === '/pr1-client.js') {
       res.end(client)
@@ -65,7 +68,7 @@ module.exports = function server (port, config) {
       res.writeHead(200, { 'Content-Type': contentType })
       if (isPr1Module) {
         // 飘刃模块
-        res.write(pr1.parse(file.toString(), pathname, config))
+        res.write(await parsePr1(file.toString(), pathname, config))
       } else if (contentType === 'text/html') {
         // 普通html文件
         res.write(file.toString().replace(/(<head>[\n\r]+)/, `$1  <script src="/pr1-client.js"></script>\n`))

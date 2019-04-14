@@ -19,6 +19,9 @@
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
-    "rollup-plugin-jtaro-module": "^0.3.2"
+    "rollup-plugin-jtaro-module": "^0.3.2",
+    "rollup-plugin-node-resolve": "^4.2.3",
+    "rollup-plugin-vue": "^5.0.0",
+    "vue": "^2.6.10"
   }
 }

@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const server = require('./server.js')
+const { appRootPath } = require('./parse.js')
 const cwd = process.cwd()
 
 // 获取运行参数
@@ -29,23 +30,11 @@ process.argv.forEach(p => {
 // 如果指定配置文件则用指定的，否则在package.json同级目录查找默认
 if (configPath) {
   config = require(path.resolve(cwd, configPath))
-} else {
-  const appRootPath = findAppRootPath()
+} else if (appRootPath) {
   const defaultConfigPath = path.resolve(appRootPath, '.pr1.config.js')
-  if (appRootPath && fs.existsSync(defaultConfigPath)) {
+  if (fs.existsSync(defaultConfigPath)) {
     config = require(defaultConfigPath)
   }
-}
-
-function findAppRootPath () {
-  let currentPath = cwd
-  while (currentPath !== '/' && !/^[a-zA-Z]:\\$/.test(currentPath)) {
-    if (fs.existsSync(path.resolve(currentPath, 'package.json'))) {
-      return currentPath
-    }
-    currentPath = path.resolve(currentPath, '..')
-  }
-  return null
 }
 
 if (isBuild) {

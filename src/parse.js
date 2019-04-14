@@ -1,10 +1,12 @@
+const fs = require('fs')
 const path = require('path')
 const cwd = process.cwd()
 
 function parseModule (txt, url) {
   if (/\bimport\b|\bexport\b/.test(txt)) {
     txt = switchExport(switchImport(txt, url), url)
-    txt = '(async function () {' + txt + '})()'
+    txt = txt.replace(/\bmodule\.exports\s+=/, 'module.exports.default =')
+    txt = `(async function (_import, module, exports) {${txt}})(pr1.import,(pr1.modules['${url}']={id:'${url}',exports:{}}),pr1.modules['${url}'].exports)`
   }
   return txt
 }
@@ -19,7 +21,7 @@ function parseModule (txt, url) {
  * 6) import a, { b, c } from './util.js'             => const { default: a, b, c } = await pr1.import('./util.js')
  */
 function switchImport (txt, url) {
-  const imports = txt.match(/\bimport\b[^\n\r]+/g)
+  const imports = txt.match(/^(\s+)?\bimport\b[^\n\r]+/gm)
   if (!imports) {
     return txt
   }
@@ -29,7 +31,7 @@ function switchImport (txt, url) {
     if (!filePath) {
       filePath = variable.trim()
       // 4)
-      result = `await pr1.import(${filePath}, '${url}')`
+      result = `await _import(${filePath}, '${url}')`
     } else {
       variable = variable.trim()
       filePath = filePath.trim()
@@ -39,18 +41,18 @@ function switchImport (txt, url) {
       if (variable[0] === '{') {
         // 2)
         const vars = variable.replace(/\{|\}/g, '').split(',').map(v => v.split(/\bas\b/))
-        result = `const { ${vars.map(v => v[0].trim() + ': ' + v[1].trim()).join(', ')} } = await pr1.import(${filePath}, '${url}')`
+        result = `const { ${vars.map(v => v[0].trim() + ': ' + v[1].trim()).join(', ')} } = await _import(${filePath}, '${url}')`
       } else {
         // 5)
-        result = `const ${variable.split(/\bas\b/)[1].trim()} = await pr1.import(${filePath}, '${url}')`
+        result = `const ${variable.split(/\bas\b/)[1].trim()} = await _import(${filePath}, '${url}')`
       }
     } else {
       if (variable[0] === '{') {
         // 1)
-        result = `const ${variable} = await pr1.import(${filePath}, '${url}')`
+        result = `const ${variable} = await _import(${filePath}, '${url}')`
       } else {
         // 3)
-        result = `const { default: ${variable} } = await pr1.import(${filePath}, '${url}')`
+        result = `const { default: ${variable} } = await _import(${filePath}, '${url}')`
       }
     }
 
@@ -66,17 +68,17 @@ function switchImport (txt, url) {
 }
 
 /* export 规则
-* 1) export var a = 'xxx'                     => pr1.modules['/xx.js']={};pr1.modules['/xx.js'].a = 'xxx'
+* 1) export var a = 'xxx'                     => pr1.modules['/xx.js'].a = 'xxx'
 * 2) export { a, b, c }                       => Object.assign(pr1.modules['/xx.js'], {a, b, c})
 * 3) export function a () {}                  => pr1.modules['/xx.js'].a = function a () {}
 * 4) export default a                         => pr1.modules['/xx.js'].default = a
 * 5) export { abc as a }                      => Object.assign(pr1.modules['/xx.js'], {a: abc} = { a })
 * 6) export class e {}                        => pr1.modules['/xx.js'].e = class e {}
 * 以下未实现
-* 7) export { default as d } from './util.js' => Object.assign(pr1.modules['/xx.js'], {default: d} = await pr1.import('./util.js'))
+* 7) export { default as d } from './util.js' => Object.assign(pr1.modules['/xx.js'], {default: d} = await _import('./util.js'))
 */
 function switchExport (txt, url) {
-  const exportx = txt.match(/\bexport\b[^\n\r]+/g)
+  const exportx = txt.match(/^(\s+)?\bexport\b[^\n\r]+/gm)
   if (!exportx) {
     return txt
   }
@@ -88,17 +90,17 @@ function switchExport (txt, url) {
 
     const reg1 = /^(var|let|const)\s+/
     if (reg1.test(variable)) {
-      result = `pr1.modules['${url}'].${variable.replace(reg1, '')}`
+      result = `exports.${variable.replace(reg1, '')}`
     }
     // 4)
     const reg2 = /^default\s+/
     if (reg2.test(variable)) {
-      result = `pr1.modules['${url}'].default = ${variable.replace(reg2, '')}`
+      result = `exports.default = ${variable.replace(reg2, '')}`
     }
     // 3) 6)
     const reg3 = /^(function|class)\s+/
     if (reg3.test(variable)) {
-      result = `pr1.modules['${url}'].${variable.replace(reg3, '').split(' ')[0]} = ${variable}`
+      result = `exports.${variable.replace(reg3, '').split(' ')[0]} = ${variable}`
     }
     // 2) 5)
     if (variable[0] === '{') {
@@ -106,28 +108,42 @@ function switchExport (txt, url) {
         const vars = variable.replace(/\{|\}/g, '').split(',').map(v => v.split(/\bas\b/))
         variable = vars.map(v => v[0].trim() + ': ' + v[1].trim()).join(', ')
       }
-      result = `Object.assign(pr1.modules['${url}'], ${variable})`
+      result = `Object.assign(exports, ${variable})`
     }
     return {
       expression: i,
       result
     }
   })
-  results[0].result = `pr1.modules['${url}']={};` + results[0].result
+  // results[0].result = `pr1.modules['${url}']={};` + results[0].result
   results.forEach(r => {
     txt = txt.replace(r.expression, r.result)
   })
   return txt
 }
 
+// 查找app根目录
+function findAppRootPath () {
+  let currentPath = cwd
+  while (currentPath !== '/' && !/^[a-zA-Z]:\\$/.test(currentPath)) {
+    if (fs.existsSync(path.resolve(currentPath, 'package.json'))) {
+      return currentPath
+    }
+    currentPath = path.resolve(currentPath, '..')
+  }
+  return null
+}
+
+const appRootPath = findAppRootPath()
+
 module.exports = {
-  parse (code, url, config) {
+  parsePr1: async function (code, url, config) {
     const id = path.resolve(cwd, '.' + url)
     // 执行rollup插件的transform
     if (config && config.rollupConfig && config.rollupConfig.plugins) {
-      code = config.rollupConfig.plugins.reduce((code, plugin) => {
+      code = await config.rollupConfig.plugins.reduce(async (code, plugin) => {
         if (typeof plugin.transform === 'function') {
-          const result = plugin.transform(code, id)
+          const result = await plugin.transform(code, id)
           if (result && result.code) {
             return result.code
           }
@@ -136,5 +152,12 @@ module.exports = {
       }, code)
     }
     return parseModule(code, url)
-  }
+  },
+  parseNode (url) {
+    const p = path.resolve(appRootPath, 'node_modules', url)
+    if (fs.existsSync(p)) {
+      return parseModule(fs.readFileSync(p).toString(), url)
+    }
+  },
+  appRootPath
 }

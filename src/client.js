@@ -1,12 +1,20 @@
 (function (win) {
   const cache = {}
+  let isNodeModule = false
 
   function dirname (p) {
     return p.substr(0, p.lastIndexOf('/'))
   }
   function resolvePath (p) {
     var d = dirname(document.baseURI)
-    var path
+    var path = ''
+
+    if (p.indexOf('.') === 0 || p.indexOf('/') === 0) {
+      isNodeModule = false
+    } else {
+      isNodeModule = true
+      return p
+    }
 
     // 支持http/https请求
     if (/^http/.test(p)) {
@@ -49,7 +57,7 @@
       const uniquePath = resolvePath(path)
 
       if (pr1.modules[uniquePath]) {
-        return pr1.modules[uniquePath]
+        return pr1.modules[uniquePath].exports
       }
       if (!cache[parentPath]) {
         cache[parentPath] = {
@@ -81,9 +89,14 @@
       }
 
       return new Promise(resolve => {
-        const src = uniquePath + (uniquePath.indexOf('?') === -1 ? '?' : '&') + 'pr1_module=1'
+        let src = ''
+        if (isNodeModule) {
+          src = '/' + uniquePath + '?node_module=1'
+        } else {
+          src = uniquePath + (uniquePath.indexOf('?') === -1 ? '?' : '&') + 'pr1_module=1'
+        }
         cache[uniquePath].resolve = (rs) => {
-          resolve(rs)
+          resolve(rs && rs.exports)
           setTimeout(() => {
             cache[uniquePath].parent.depend--
             if (cache[uniquePath].parent.depend === 0 && cache[uniquePath].parent.resolve) {
