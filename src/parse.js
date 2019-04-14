@@ -144,8 +144,8 @@ module.exports = {
       code = await config.rollupConfig.plugins.reduce(async (code, plugin) => {
         if (typeof plugin.transform === 'function') {
           const result = await plugin.transform(await code, id)
-          if (result && result.code) {
-            return result.code
+          if (result) {
+            return result.code ? result.code : result
           }
         }
         return code

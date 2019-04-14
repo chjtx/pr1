@@ -2,6 +2,21 @@
 
 基于 Rollup 的极简前端模块管理工具，默认零配置
 
+内含支持含作用域的 style 和 html 插件 rollup-plugin-pr1-html
+
+只为简单快速开发，不支持 .vue 等需要大量复杂解释的插件
+
+## 进度
+
+- [ ] 全局命令
+- [ ] 全局打包命令
+- [x] import和export语法解释
+- [x] 配置文件 Rollup 插件的 transform 支持
+- [ ] 配置文件的 beforeBuild 和 afterBuild 钩子
+- [ ] ~~配置文件的文件监听~~ 意义不大，都习惯手动刷新
+- [ ] 编写 Rollup 插件以支持 html 等文件 rollup-plugin-pr1-html
+- [ ] 异步加载
+
 ## 安装运行
 
 ```
