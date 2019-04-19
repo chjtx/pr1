@@ -1,6 +1,8 @@
 const fs = require('fs-extra')
 const CleanCSS = require('clean-css')
 const { createFilter } = require('rollup-pluginutils')
+const compiler = require('vue-template-compiler')
+const { compileTemplate } = require('@vue/component-compiler-utils')
 const cwd = process.cwd()
 
 function addStyleScope (str, scope) {
@@ -11,8 +13,19 @@ function addStyleScope (str, scope) {
   }).join(' ')
 }
 
+function addHTMLScope (match, start, scope) {
+  if (/^<slot/.test(start) || /<\/[a-zA-Z_-]+>/.test(match)) {
+    return match
+  }
+  if (start.lastIndexOf('/') === start.length - 1) {
+    return start.slice(0, -1) + ' ' + scope + '/>'
+  } else {
+    return start.trimRight() + ' ' + scope + '>'
+  }
+}
+
 module.exports = function (options) {
-  const filter = createFilter(['/**/*.html'])
+  const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.vue'])
   const css = []
   let count = 0
 
@@ -22,6 +35,16 @@ module.exports = function (options) {
       if (!filter(id)) {
         return
       }
+      if (/\.js$/.test(id)) {
+        // 开发环境直接跳过
+        if (process.env.NODE_ENV === 'development') {
+          return
+        } else if (fs.existsSync(id.replace(/\.js$/, '.html'))) {
+          // 生产环境转为render函数
+          return code.replace(/template: html/, 'render: html.render,\nstaticRenderFns: html.staticRenderFns')
+        }
+      }
+
       const pathId = id.replace(cwd, '').replace(/\\/g, '/')
 
       // 分离style和html
@@ -56,16 +79,7 @@ module.exports = function (options) {
 
       // html添加作用域
       if (style) {
-        html = html.replace(/(<[^>]+)(\/?)>/gm, function (match, start) {
-          if (/^<slot/.test(start) || /<\/[a-zA-Z_-]+>/.test(match)) {
-            return match
-          }
-          if (start.lastIndexOf('/') === start.length - 1) {
-            return start.slice(0, -1) + ' ' + scope + '/>'
-          } else {
-            return start.trimRight() + ' ' + scope + '>'
-          }
-        })
+        html = html.replace(/(<[^>]+)(\/?)>/gm, (match, start) => addHTMLScope(match, start, scope))
       }
 
       if (process.env.NODE_ENV === 'development') {
@@ -77,6 +91,19 @@ module.exports = function (options) {
       } else {
         // 生产环境
         css.push(style)
+        if (fs.existsSync(id.replace(/\.html$/, '.js'))) {
+          // html转成render函数
+          const compiled = compileTemplate({
+            source: html,
+            filename: '',
+            compiler,
+            transformAssetUrls: '',
+            isFunctional: false,
+            isProduction: true,
+            optimizeSSR: false
+          })
+          return compiled.code + '\nexport default {render, staticRenderFns};'
+        }
         return `export default ${JSON.stringify(html)}`
       }
     },

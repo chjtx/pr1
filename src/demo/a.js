@@ -4,8 +4,10 @@ import a1 from './a1.html'
 
 const a = 1 + b
 console.log(html)
-console.log(a1)
+console.log(a)
 
-document.getElementById('app').innerHTML = html + a1
+document.getElementById('app2').innerHTML = a1
 
-export default a
+export default {
+  template: html
+}

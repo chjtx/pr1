@@ -1,6 +1,7 @@
-<template>
-<div>123</div>
+<template lang="pug">
+<div></div>
 </template>
+
 <script>
 export default {
   data () {
@@ -8,3 +9,8 @@ export default {
   }
 }
 </script>
+<style>
+body {
+  background: #000;
+}
+</style>

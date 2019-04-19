@@ -1,21 +1,35 @@
 const rollup = require('rollup')
 const path = require('path')
+const babel = require('@babel/core')
+const uglify = require('uglify-js')
 const fs = require('fs-extra')
 const { appRootPath } = require('./parse.js')
 const cwd = process.cwd()
 
-async function bundle (input, out, options) {
+async function bundle (input, out, config) {
   const inputOptions = {
     input: input,
-    plugins: options.plugins,
+    plugins: config.rollupConfig.plugins,
     context: 'window'
   }
   const outputOptions = {
     format: 'iife',
-    file: out
+    file: out // 给 rollup-plugin-pr1 使用
   }
+  // rollup
   const bundle = await rollup.rollup(inputOptions)
-  await bundle.write(outputOptions)
+  const { output } = await bundle.generate(outputOptions)
+  let code = output[0].code
+  // babel
+  if (config.babelConfig) {
+    code = babel.transform(code, config.babelConfig).code
+  }
+  // uglify
+  if (config.uglifyConfig) {
+    code = uglify.minify(code, config.uglifyConfig).code
+  }
+
+  fs.writeFileSync(out, code)
 }
 
 module.exports = {
@@ -54,7 +68,7 @@ module.exports = {
     // 打包rollup
     const input = path.resolve(originDir, main)
     const out = path.resolve(distDir, main)
-    await bundle(input, out, config.rollupConfig)
+    await bundle(input, out, config)
 
     // 如果存在如js同名css，加入到index的head里去
     const cssPath = out.replace(/\.js$/, '.css')
