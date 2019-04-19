@@ -107,6 +107,12 @@
         loadScript(src, parentPath, uniquePath)
       })
     },
+    injectStyle (css, pathId) {
+      const style = document.createElement('style')
+      style.setAttribute('pr1-path', pathId)
+      style.innerHTML = css
+      document.head.appendChild(style)
+    },
     // require
     require () {
 

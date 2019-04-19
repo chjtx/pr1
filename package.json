@@ -10,6 +10,8 @@
   "author": "BarZu",
   "license": "MIT",
   "dependencies": {
+    "clean-css": "^4.2.1",
+    "fs-extra": "^7.0.1",
     "rollup": "^1.10.0",
     "rollup-pluginutils": "^2.6.0"
   },

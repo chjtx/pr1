@@ -6,6 +6,7 @@
 const pr1Plugin = require('./src/rollup-plugin-pr1.js')
 
 module.exports = {
+  static: ['./images'],
   rollupConfig: {           // 打包时用到的 Rollup 配置，input 和 output 的 file 选项是无效的
     plugins: [
       // jtaroModule(),
@@ -16,5 +17,8 @@ module.exports = {
       // pug()
       pr1Plugin()
     ]    // 配置 Rollup 的插件，飘刃也会用到
+  },
+  afterBuild: async function (distDir) {
+    console.log(distDir)
   }
 }

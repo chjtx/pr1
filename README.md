@@ -37,17 +37,19 @@ pr1 build index.html --config="./config.js" --out="./dist/"
 
 ```js
 module.exports = {
-  watch: {
-    include: ['/web/**'],  // 文件变化，自动刷新浏览器。 glob 模式文件路径
-    exclude: ['/web/config.js'] // 排除监听
-  },
+  // watch: {
+  //   include: ['/web/**'],  // 文件变化，自动刷新浏览器。 glob 模式文件路径
+  //   exclude: ['/web/config.js'] // 排除监听
+  // },
+  dist: '', // 相对于配置文件的打包路径
+  static: ['./images'], // 相对于入口html文件，保持目录结构拷贝到打包目标文件夹
   rollupConfig: {           // 打包时用到的 Rollup 配置，input 和 output 的 file 选项是无效的
-    plugins: [ json() ],    // 配置 Rollup 的插件，飘刃也会用到
+    plugins: [ plugin() ],    // 配置 Rollup 的插件，飘刃也会用到
   },
-  beforeBuild () {
+  beforeBuild: async function (originDir) {
 
   },
-  afterBuild () {
+  afterBuild: async function (distDir) {
 
   }
 }

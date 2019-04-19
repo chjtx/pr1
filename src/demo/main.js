@@ -1,6 +1,6 @@
 import a from './a.js'
 import { b as abc, o as omg } from './b.js'
-import Vue from 'vue/dist/vue.esm.browser.js'
+// import Vue from 'vue/dist/vue.esm.browser.js'
 // import d from './d.vue'
 
 console.log(a)

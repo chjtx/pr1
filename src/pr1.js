@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const server = require('./server.js')
 const { appRootPath } = require('./parse.js')
+const { build } = require('./build.js')
 const cwd = process.cwd()
 
 // 获取运行参数
@@ -9,6 +10,7 @@ let entry = ''
 let port = '8686'
 let isBuild = false
 let configPath = ''
+let configAbsolutePath = ''
 let config = null
 
 process.argv.forEach(p => {
@@ -29,20 +31,19 @@ process.argv.forEach(p => {
 
 // 如果指定配置文件则用指定的，否则在package.json同级目录查找默认
 if (configPath) {
-  config = require(path.resolve(cwd, configPath))
+  configAbsolutePath = path.resolve(cwd, configPath)
+  config = require(configAbsolutePath)
 } else if (appRootPath) {
-  const defaultConfigPath = path.resolve(appRootPath, '.pr1.config.js')
-  if (fs.existsSync(defaultConfigPath)) {
-    config = require(defaultConfigPath)
+  configAbsolutePath = path.resolve(appRootPath, '.pr1.config.js')
+  if (fs.existsSync(configAbsolutePath)) {
+    config = require(configAbsolutePath)
   }
 }
 
 if (isBuild) {
-  runBuild(entry)
+  process.env.NODE_ENV = 'production'
+  build(entry, config, configAbsolutePath)
 } else {
+  process.env.NODE_ENV = 'development'
   server(port, config)
-}
-
-function runBuild () {
-
 }
