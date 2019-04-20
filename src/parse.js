@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const pr1Plugin = require('./rollup-plugin-pr1.js')()
 const cwd = process.cwd()
 
 function parseModule (txt, url) {
@@ -31,7 +32,10 @@ function switchImport (txt, url) {
     if (!filePath) {
       filePath = variable.trim()
       // 4)
-      result = `await _import(${filePath}, '${url}')`
+      return {
+        expression: i,
+        result: `await _import(${filePath}, '${url}')`
+      }
     } else {
       variable = variable.trim()
       filePath = filePath.trim()
@@ -141,7 +145,7 @@ module.exports = {
     const id = path.resolve(cwd, '.' + url)
     // 执行rollup插件的transform
     if (config && config.rollupConfig && config.rollupConfig.plugins) {
-      code = await config.rollupConfig.plugins.reduce(async (code, plugin) => {
+      code = await [...config.rollupConfig.plugins, pr1Plugin].reduce(async (code, plugin) => {
         if (typeof plugin.transform === 'function') {
           const result = await plugin.transform(await code, id)
           if (result) {

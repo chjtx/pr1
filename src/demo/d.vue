@@ -1,16 +1,24 @@
 <template lang="pug">
-<div></div>
+div
+  input(v-model="a")
+  h3 pug-h3
+    span {{ a }}
 </template>
 
 <script>
 export default {
   data () {
-    return {}
+    return {
+      a: ''
+    }
   }
 }
 </script>
-<style>
-body {
-  background: #000;
+
+
+<style lang="sass" scoped>
+$abc: #008877;
+h3 {
+  color: $abc;
 }
 </style>

@@ -1,7 +1,8 @@
 import a from './a.js'
 import { b as abc, o as omg } from './b.js'
 import Vue from 'vue/dist/vue.esm.browser.js'
-// import d from './d.vue'
+import 'jroll/src/jroll.js'
+import d from './d.vue'
 
 console.log(a)
 console.log(abc)
@@ -14,6 +15,6 @@ omg('123orm')
 new Vue({
   el: '#app',
   components: {
-    'my-vue-component': a
+    'my-vue-component': d
   }
 })

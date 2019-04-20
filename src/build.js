@@ -4,12 +4,13 @@ const babel = require('@babel/core')
 const uglify = require('uglify-js')
 const fs = require('fs-extra')
 const { appRootPath } = require('./parse.js')
+const pr1Plugin = require('./rollup-plugin-pr1.js')()
 const cwd = process.cwd()
 
 async function bundle (input, out, config) {
   const inputOptions = {
     input: input,
-    plugins: config.rollupConfig.plugins,
+    plugins: [...config.rollupConfig.plugins, pr1Plugin],
     context: 'window'
   }
   const outputOptions = {

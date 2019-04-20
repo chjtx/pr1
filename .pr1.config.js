@@ -4,7 +4,7 @@
 // const less = require('rollup-plugin-less') // 落选
 // const scss = require('rollup-plugin-scss')
 const nodeResolve = require('rollup-plugin-node-resolve')
-const pr1Plugin = require('./src/rollup-plugin-pr1.js')
+// const pr1Plugin = require('./src/rollup-plugin-pr1.js')
 
 module.exports = {
   static: ['./images'],
@@ -17,7 +17,7 @@ module.exports = {
       // less(),
       // pug()
       nodeResolve(),
-      pr1Plugin()
+      // pr1Plugin()
     ]    // 配置 Rollup 的插件，飘刃也会用到
   },
   babelConfig: {
@@ -35,7 +35,10 @@ module.exports = {
   uglifyConfig: {
     toplevel: true
   },
+  beforeBuild: async function (originDir) {
+    console.log(`开始打包：${originDir}`)
+  },
   afterBuild: async function (distDir) {
-    console.log(distDir)
+    console.log(`打包完成：${distDir}`)
   }
 }
