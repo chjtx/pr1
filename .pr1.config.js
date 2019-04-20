@@ -7,8 +7,14 @@ const nodeResolve = require('rollup-plugin-node-resolve')
 // const pr1Plugin = require('./src/rollup-plugin-pr1.js')
 
 module.exports = {
+  vendor: [ // [0]是开发环境用的，[1]是生产环境用的，如果没有[1]生产环境也用[0]
+    ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.min.js']
+  ],
   static: ['./images'],
   rollupConfig: {           // 打包时用到的 Rollup 配置，input 和 output 的 file 选项是无效的
+    globals: {
+      'vue/dist/vue.esm.browser.js': 'Vue'
+    },
     plugins: [
       // jtaroModule(),
       // scss({

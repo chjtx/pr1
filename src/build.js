@@ -3,6 +3,7 @@ const path = require('path')
 const babel = require('@babel/core')
 const uglify = require('uglify-js')
 const fs = require('fs-extra')
+const crypto = require('crypto')
 const { appRootPath } = require('./parse.js')
 const pr1Plugin = require('./rollup-plugin-pr1.js')()
 const cwd = process.cwd()
@@ -10,11 +11,13 @@ const cwd = process.cwd()
 async function bundle (input, out, config) {
   const inputOptions = {
     input: input,
+    external: (config.vendor || []).map(i => i[0]),
     plugins: [...config.rollupConfig.plugins, pr1Plugin],
     context: 'window'
   }
   const outputOptions = {
     format: 'iife',
+    globals: config.rollupConfig.globals || {},
     file: out // 给 rollup-plugin-pr1 使用
   }
   // rollup
@@ -31,6 +34,36 @@ async function bundle (input, out, config) {
   }
 
   fs.writeFileSync(out, code)
+  return code
+}
+
+function getShortMd5 (txt) {
+  const hash = crypto.createHash('md5')
+  hash.update(txt)
+  const hex = hash.digest('hex').slice(0, 6)
+  return hex
+}
+
+function addSrcHash (txt, distDir) {
+  let html = txt
+  const srcs = txt.match(/(href|src)=("|')?[^ "']+\2?/gm)
+  const result = srcs.map(i => {
+    const src = i.replace(/^(href|src)=("|')?/, '').replace(/("|')$/, '')
+    const absoulteSrc = path.resolve(distDir, src.split('?')[0])
+    if (src.indexOf('http') !== 0 && fs.existsSync(absoulteSrc)) {
+      return {
+        src: i,
+        md5Src: i.replace(src, src + (~src.indexOf('?') ? '&' : '?') + `v=${getShortMd5(fs.readFileSync(absoulteSrc))}`)
+      }
+    }
+    return null
+  })
+  result.forEach(r => {
+    if (r) {
+      html = html.replace(r.src, r.md5Src)
+    }
+  })
+  return html
 }
 
 module.exports = {
@@ -55,6 +88,15 @@ module.exports = {
     const distDir = path.dirname(distIndexPath)
     fs.copySync(originIndexPath, distIndexPath)
 
+    // 拷贝第三方工具
+    const vendors = []
+    ;(config.vendor || []).forEach(f => {
+      const file = f[1] || f[0]
+      const fileName = path.basename(file)
+      vendors.push(`  <script src="./vendor/${fileName}"></script>`)
+      fs.copySync(path.resolve(appRootPath, 'node_modules/', file), path.resolve(distDir, 'vendor/', fileName))
+    })
+
     // 入口js
     const index = fs.readFileSync(originIndexPath)
     const main = /src="([^"]+)\?pr1_module=1"/.exec(index)[1]
@@ -69,17 +111,28 @@ module.exports = {
     // 打包rollup
     const input = path.resolve(originDir, main)
     const out = path.resolve(distDir, main)
-    await bundle(input, out, config)
+    const code = await bundle(input, out, config)
 
+    let indexHtml = fs.readFileSync(distIndexPath).toString()
     // 如果存在如js同名css，加入到index的head里去
     const cssPath = out.replace(/\.js$/, '.css')
     if (fs.existsSync(cssPath)) {
       const relativeCssPath = cssPath.replace(distDir, '')
-      let indexHtml = fs.readFileSync(distIndexPath).toString()
-      indexHtml = indexHtml.replace(/<\/head>/, `  <link rel="stylesheet" href=".${relativeCssPath.replace(/\\/g, '/')}">\n</head>`)
-      fs.writeFileSync(distIndexPath, indexHtml)
+      vendors.unshift(`  <link rel="stylesheet" href=".${relativeCssPath.replace(/\\/g, '/')}">`)
+    }
+    // 如果存在 bable 的 regeneratorRuntime，自动加入 profill
+    if (/\bregeneratorRuntime\b/.test(code)) {
+      fs.copySync(path.resolve(appRootPath, 'node_modules/@babel/polyfill/dist/polyfill.min.js'), path.resolve(distDir, 'vendor/polyfill.min.js'))
+      vendors.push(`  <script src="./vendor/polyfill.min.js"></script>`)
     }
 
+    // 将 vendors 插入 head
+    indexHtml = indexHtml.replace(/<\/head>/, `${vendors.join('\n')}\n</head>`)
+
+    // 将index.html里的所有内部路径加上hash
+    indexHtml = addSrcHash(indexHtml, distDir)
+
+    fs.writeFileSync(distIndexPath, indexHtml)
     // 执行打包完的回调
     if (config.afterBuild) {
       await config.afterBuild(path.dirname(out))

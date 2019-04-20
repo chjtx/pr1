@@ -13,7 +13,8 @@
 - [x] 配置文件的 beforeBuild 和 afterBuild 钩子
 - [ ] ~~配置文件的文件监听~~ 意义不大，都习惯手动刷新
 - [x] 编写 Rollup 插件以支持 html 等文件 rollup-plugin-pr1
-- [ ] 使 rollup-plugin-pr1 插件支持 .vue 文件
+- [x] 使 rollup-plugin-pr1 插件支持 .vue 文件
+- [ ] 提取 node_modules 的文件到外部
 - [ ] 异步加载
 
 ## 安装运行
@@ -40,9 +41,15 @@ module.exports = {
   //   include: ['/web/**'],  // 文件变化，自动刷新浏览器。 glob 模式文件路径
   //   exclude: ['/web/config.js'] // 排除监听
   // },
+  vendor: [ // [0]是开发环境用的，[1]是生产环境用的，如果没有[1]生产环境也用[0]
+    ['vue.js', 'vue.min.js']
+  ],
   dist: '', // 相对于配置文件的打包路径
   static: ['./images'], // 相对于入口html文件，保持目录结构拷贝到打包目标文件夹
   rollupConfig: {           // 打包时用到的 Rollup 配置，input 和 output 的 file 选项是无效的
+    globals: {
+      'vue.js': 'Vue'
+    }
     plugins: [ plugin() ],    // 配置 Rollup 的插件，飘刃也会用到
   },
   babelConfig: {},

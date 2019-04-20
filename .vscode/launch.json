@@ -7,6 +7,17 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "build",
+      "cwd": "${workspaceFolder}\\src",
+      "program": "${workspaceFolder}\\src\\pr1.js",
+      "args": [
+        "build",
+        "demo/index.html"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "启动程序",
       "cwd": "${workspaceFolder}\\src",
       "program": "${workspaceFolder}\\src\\pr1.js"

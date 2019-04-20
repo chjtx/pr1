@@ -21,7 +21,8 @@
     "rollup": "^1.10.0",
     "rollup-pluginutils": "^2.6.0",
     "uglify-js": "^3.5.5",
-    "vue-template-compiler": "^2.6.10"
+    "vue-template-compiler": "^2.6.10",
+    "vue": "^2.6.10"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
