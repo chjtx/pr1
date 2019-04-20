@@ -43,7 +43,7 @@ function releaseVueTemplate (html) {
 
 module.exports = function () {
   const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.vue'])
-  const css = []
+  let css = []
   let count = 0
 
   return {
@@ -148,8 +148,11 @@ module.exports = function () {
     },
     generateBundle (outputOptions) {
       const cssPath = outputOptions.file.replace(/\.js$/, '.css')
-      const output = new CleanCSS().minify(css.join('\n'))
-      fs.writeFileSync(cssPath, output.styles)
+      if (css.length) {
+        const output = new CleanCSS().minify(css.join('\n'))
+        fs.writeFileSync(cssPath, output.styles)
+        css = []
+      }
     }
   }
 }

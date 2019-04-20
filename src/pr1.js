@@ -6,7 +6,7 @@ const { build } = require('./build.js')
 const cwd = process.cwd()
 
 // 获取运行参数
-let entry = ''
+let entry = []
 let port = '8686'
 let isBuild = false
 let configPath = ''
@@ -16,7 +16,7 @@ let config = null
 process.argv.forEach(p => {
   if (/\.html$/.test(p)) {
     // 入口
-    entry = p
+    entry.push(p)
   } else if (p === 'build') {
     // build
     isBuild = true

@@ -33,6 +33,7 @@ async function bundle (input, out, config) {
     code = uglify.minify(code, config.uglifyConfig).code
   }
 
+  code = code.replace(/\bprocess\.env\.NODE_ENV\b/g, `'${process.env.NODE_ENV}'`)
   fs.writeFileSync(out, code)
   return code
 }
@@ -66,14 +67,71 @@ function addSrcHash (txt, distDir) {
   return html
 }
 
+async function compile (entry, config, dist) {
+  const originIndexPath = path.resolve(cwd, entry)
+  const originDir = path.dirname(originIndexPath)
+  if (config.beforeBuild) {
+    await config.beforeBuild(originDir)
+  }
+
+  // 拷贝入口文件
+  const distIndexPath = path.resolve(dist, entry)
+  const distDir = path.dirname(distIndexPath)
+  fs.copySync(originIndexPath, distIndexPath)
+
+  // 拷贝第三方工具
+  const vendors = []
+  ;(config.vendor || []).forEach(f => {
+    const file = f[1] || f[0]
+    const fileName = path.basename(file)
+    vendors.push(`  <script src="./vendor/${fileName}"></script>`)
+    fs.copySync(path.resolve(appRootPath, 'node_modules/', file), path.resolve(distDir, 'vendor/', fileName))
+  })
+
+  // 入口js
+  const index = fs.readFileSync(originIndexPath)
+  const main = /src="([^"]+)\?pr1_module=1"/.exec(index)[1]
+
+  // 拷贝静态文件
+  if (config.static) {
+    config.static.forEach(f => {
+      fs.copySync(path.resolve(originDir, f), path.resolve(distDir, f))
+    })
+  }
+
+  // 打包rollup
+  const input = path.resolve(originDir, main)
+  const out = path.resolve(distDir, main)
+  const code = await bundle(input, out, config)
+
+  let indexHtml = fs.readFileSync(distIndexPath).toString()
+  // 如果存在如js同名css，加入到index的head里去
+  const cssPath = out.replace(/\.js$/, '.css')
+  if (fs.existsSync(cssPath)) {
+    const relativeCssPath = cssPath.replace(distDir, '')
+    vendors.unshift(`  <link rel="stylesheet" href=".${relativeCssPath.replace(/\\/g, '/')}">`)
+  }
+  // 如果存在 bable 的 regeneratorRuntime，自动加入 profill
+  if (/\bregeneratorRuntime\b/.test(code)) {
+    fs.copySync(path.resolve(appRootPath, 'node_modules/@babel/polyfill/dist/polyfill.min.js'), path.resolve(distDir, 'vendor/polyfill.min.js'))
+    vendors.push(`  <script src="./vendor/polyfill.min.js"></script>`)
+  }
+
+  // 将 vendors 插入 head
+  indexHtml = indexHtml.replace(/<\/head>/, `${vendors.join('\n')}\n</head>`)
+
+  // 将index.html里的所有内部路径加上hash
+  indexHtml = addSrcHash(indexHtml, distDir)
+
+  fs.writeFileSync(distIndexPath, indexHtml)
+  // 执行打包完的回调
+  if (config.afterBuild) {
+    await config.afterBuild(path.dirname(out))
+  }
+}
+
 module.exports = {
   build: async function (entry, config, configAbsolutePath) {
-    const originIndexPath = path.resolve(cwd, entry)
-    const originDir = path.dirname(originIndexPath)
-    if (config.beforeBuild) {
-      await config.beforeBuild(originDir)
-    }
-
     // 清空/创建dist目录
     const dist = config.dist
       ? path.resolve(configAbsolutePath, config.dist)
@@ -83,59 +141,8 @@ module.exports = {
     }
     fs.mkdirSync(dist)
 
-    // 拷贝入口文件
-    const distIndexPath = path.resolve(dist, entry)
-    const distDir = path.dirname(distIndexPath)
-    fs.copySync(originIndexPath, distIndexPath)
-
-    // 拷贝第三方工具
-    const vendors = []
-    ;(config.vendor || []).forEach(f => {
-      const file = f[1] || f[0]
-      const fileName = path.basename(file)
-      vendors.push(`  <script src="./vendor/${fileName}"></script>`)
-      fs.copySync(path.resolve(appRootPath, 'node_modules/', file), path.resolve(distDir, 'vendor/', fileName))
-    })
-
-    // 入口js
-    const index = fs.readFileSync(originIndexPath)
-    const main = /src="([^"]+)\?pr1_module=1"/.exec(index)[1]
-
-    // 拷贝静态文件
-    if (config.static) {
-      config.static.forEach(f => {
-        fs.copySync(path.resolve(originDir, f), path.resolve(distDir, f))
-      })
-    }
-
-    // 打包rollup
-    const input = path.resolve(originDir, main)
-    const out = path.resolve(distDir, main)
-    const code = await bundle(input, out, config)
-
-    let indexHtml = fs.readFileSync(distIndexPath).toString()
-    // 如果存在如js同名css，加入到index的head里去
-    const cssPath = out.replace(/\.js$/, '.css')
-    if (fs.existsSync(cssPath)) {
-      const relativeCssPath = cssPath.replace(distDir, '')
-      vendors.unshift(`  <link rel="stylesheet" href=".${relativeCssPath.replace(/\\/g, '/')}">`)
-    }
-    // 如果存在 bable 的 regeneratorRuntime，自动加入 profill
-    if (/\bregeneratorRuntime\b/.test(code)) {
-      fs.copySync(path.resolve(appRootPath, 'node_modules/@babel/polyfill/dist/polyfill.min.js'), path.resolve(distDir, 'vendor/polyfill.min.js'))
-      vendors.push(`  <script src="./vendor/polyfill.min.js"></script>`)
-    }
-
-    // 将 vendors 插入 head
-    indexHtml = indexHtml.replace(/<\/head>/, `${vendors.join('\n')}\n</head>`)
-
-    // 将index.html里的所有内部路径加上hash
-    indexHtml = addSrcHash(indexHtml, distDir)
-
-    fs.writeFileSync(distIndexPath, indexHtml)
-    // 执行打包完的回调
-    if (config.afterBuild) {
-      await config.afterBuild(path.dirname(out))
+    for (let i = 0; i < entry.length; i++) {
+      await compile(entry[i], config, dist)
     }
   }
 }
