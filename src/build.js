@@ -81,10 +81,12 @@ async function compile (entry, config, dist) {
 
   // 拷贝第三方工具
   const vendors = []
+  const preload = []
   ;(config.vendor || []).forEach(f => {
     const file = f[1] || f[0]
     const fileName = path.basename(file)
     vendors.push(`  <script src="./vendor/${fileName}"></script>`)
+    preload.push(`  <link rel="preload" href="./vendor/${fileName}" as="script">`)
     fs.copySync(path.resolve(appRootPath, 'node_modules/', file), path.resolve(distDir, 'vendor/', fileName))
   })
 
@@ -105,20 +107,27 @@ async function compile (entry, config, dist) {
   const code = await bundle(input, out, config)
 
   let indexHtml = fs.readFileSync(distIndexPath).toString()
-  // 如果存在如js同名css，加入到index的head里去
-  const cssPath = out.replace(/\.js$/, '.css')
-  if (fs.existsSync(cssPath)) {
-    const relativeCssPath = cssPath.replace(distDir, '')
-    vendors.unshift(`  <link rel="stylesheet" href=".${relativeCssPath.replace(/\\/g, '/')}">`)
-  }
+
   // 如果存在 bable 的 regeneratorRuntime，自动加入 profill
   if (/\bregeneratorRuntime\b/.test(code)) {
     fs.copySync(path.resolve(appRootPath, 'node_modules/@babel/polyfill/dist/polyfill.min.js'), path.resolve(distDir, 'vendor/polyfill.min.js'))
     vendors.push(`  <script src="./vendor/polyfill.min.js"></script>`)
+    preload.push(`  <link rel="preload" href="./vendor/polyfill.min.js" as="script">`)
   }
 
-  // 将 vendors 插入 head
-  indexHtml = indexHtml.replace(/<\/head>/, `${vendors.join('\n')}\n</head>`)
+  // 将 preload 插入 head
+  indexHtml = indexHtml.replace(/<\/head>/, `${preload.join('\n')}\n</head>`)
+
+  // 如果存在如js同名css，加入到index的head里去
+  const cssPath = out.replace(/\.js$/, '.css')
+  if (fs.existsSync(cssPath)) {
+    const relativeCssPath = cssPath.replace(distDir, '').replace(/\\/g, '/')
+    indexHtml = indexHtml.replace(/<\/head>/, `  <link rel="stylesheet" href=".${relativeCssPath}">\n</head>`)
+  }
+
+  // 将 vendors 插入 pr1_module 之前
+  const pr1ModuleScript = /^.+pr1_module=1.+$/m.exec(indexHtml)
+  indexHtml = indexHtml.replace(pr1ModuleScript[0], `${vendors.join('\n')}\n${pr1ModuleScript[0]}`)
 
   // 将index.html里的所有内部路径加上hash
   indexHtml = addSrcHash(indexHtml, distDir)

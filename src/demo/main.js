@@ -21,6 +21,10 @@ async function ddd () {
   console.log(await opq('hello promise'))
 }
 
+pr1.require('./b.js', (data) => {
+
+})
+
 ddd()
 
 omg('123orm')

@@ -21,8 +21,8 @@
     "rollup": "^1.10.0",
     "rollup-pluginutils": "^2.6.0",
     "uglify-js": "^3.5.5",
-    "vue-template-compiler": "^2.6.10",
-    "vue": "^2.6.10"
+    "vue": "^2.6.10",
+    "vue-template-compiler": "^2.6.10"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
@@ -32,13 +32,7 @@
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "jroll": "^2.6.5",
-    "rollup-plugin-jtaro-module": "^0.3.2",
-    "rollup-plugin-less": "^1.1.2",
     "rollup-plugin-node-resolve": "^4.2.3",
-    "rollup-plugin-pug": "^1.1.1",
-    "rollup-plugin-pug-html": "0.0.2",
-    "rollup-plugin-scss": "^1.0.1",
-    "rollup-plugin-vue": "^5.0.0",
-    "vue": "^2.6.10"
+    "rollup-plugin-vue": "^5.0.0"
   }
 }
