@@ -4,6 +4,8 @@ const { URL } = require('url')
 const fs = require('fs')
 const { parsePr1, parseNode } = require('./parse.js')
 
+require('colors')
+
 const cwd = process.cwd()
 const mime = {
   'css': 'text/css',
@@ -85,5 +87,5 @@ module.exports = function server (port, config) {
     }
   })
   server.listen(port)
-  console.log('pr1 server run on port: ' + port)
+  console.log(`pr1 server run on port: ${port}`.green)
 }

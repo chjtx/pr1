@@ -1,11 +1,13 @@
 {
   "name": "piaoren",
   "version": "0.0.1",
-  "description": "Very fast ES6+  module tools",
+  "description": "which front-end engineering build tools for Vue project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "cd src && node pr1.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "pr1": "bin/pr1.js"
   },
   "author": "BarZu",
   "license": "MIT",
@@ -15,6 +17,7 @@
     "@babel/preset-env": "^7.4.3",
     "@vue/component-compiler-utils": "^3.0.0",
     "clean-css": "^4.2.1",
+    "colors": "^1.3.3",
     "fs-extra": "^7.0.1",
     "node-sass": "^4.11.0",
     "pug": "^2.0.3",
