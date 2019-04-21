@@ -15,7 +15,7 @@ module.exports = {
   rollupConfig: {           // 打包时用到的 Rollup 配置，input 和 output 的 file 选项是无效的
     globals: {
       'vue/dist/vue.esm.browser.js': 'Vue',
-      'jroll/src/jroll.js': 'JRoll',
+      'jroll/src/jroll.js': 'JRoll'
     },
     plugins: [
       // jtaroModule(),
@@ -32,6 +32,7 @@ module.exports = {
     presets: [
       [
         '@babel/env', {
+          modules: false,
           targets: {
             ie: '9',
             chrome: '49'

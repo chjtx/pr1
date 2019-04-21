@@ -8,7 +8,7 @@ const { appRootPath } = require('./parse.js')
 const pr1Plugin = require('./rollup-plugin-pr1.js')()
 const cwd = process.cwd()
 
-async function bundle (input, out, config) {
+async function bundle (input, out, config, outName) {
   const inputOptions = {
     input: input,
     external: (config.vendor || []).map(i => i[0]),
@@ -17,6 +17,7 @@ async function bundle (input, out, config) {
   }
   const outputOptions = {
     format: 'iife',
+    name: outName,
     globals: config.rollupConfig.globals || {},
     file: out // 给 rollup-plugin-pr1 使用
   }
@@ -34,7 +35,7 @@ async function bundle (input, out, config) {
   }
 
   code = code.replace(/\bprocess\.env\.NODE_ENV\b/g, `'${process.env.NODE_ENV}'`)
-  fs.writeFileSync(out, code)
+  fs.outputFileSync(out, code)
   return code
 }
 
@@ -45,6 +46,7 @@ function getShortMd5 (txt) {
   return hex
 }
 
+// 给html的src或href添加hash防缓存
 function addSrcHash (txt, distDir) {
   let html = txt
   const srcs = txt.match(/(href|src)=("|')?[^ "']+\2?/gm)
@@ -67,15 +69,10 @@ function addSrcHash (txt, distDir) {
   return html
 }
 
-async function compile (entry, config, dist) {
-  const originIndexPath = path.resolve(cwd, entry)
+async function compileHTML (config, originIndexPath, distIndexPath) {
   const originDir = path.dirname(originIndexPath)
-  if (config.beforeBuild) {
-    await config.beforeBuild(originDir)
-  }
 
   // 拷贝入口文件
-  const distIndexPath = path.resolve(dist, entry)
   const distDir = path.dirname(distIndexPath)
   fs.copySync(originIndexPath, distIndexPath)
 
@@ -133,9 +130,25 @@ async function compile (entry, config, dist) {
   indexHtml = addSrcHash(indexHtml, distDir)
 
   fs.writeFileSync(distIndexPath, indexHtml)
+}
+
+async function compile (entry, config, dist) {
+  const originIndexPath = path.resolve(cwd, entry)
+  const distIndexPath = path.resolve(dist, entry)
+
+  if (config.beforeBuild) {
+    await config.beforeBuild(originIndexPath)
+  }
+
+  if (/\.js$/.test(entry)) {
+    await bundle(originIndexPath, distIndexPath, config, `pr1.modules.${path.basename(entry).replace(/\./g, '_')}`)
+  } else {
+    await compileHTML(config, originIndexPath, distIndexPath)
+  }
+
   // 执行打包完的回调
   if (config.afterBuild) {
-    await config.afterBuild(path.dirname(out))
+    await config.afterBuild(distIndexPath)
   }
 }
 

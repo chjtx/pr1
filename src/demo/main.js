@@ -1,3 +1,4 @@
+/* global pr1 */
 import a from './a.js'
 import { b as abc, o as omg } from './b.js'
 import Vue from 'vue/dist/vue.esm.browser.js'
@@ -22,7 +23,7 @@ async function ddd () {
 }
 
 pr1.require('./b.js', (data) => {
-
+  console.log(data)
 })
 
 ddd()

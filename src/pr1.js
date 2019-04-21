@@ -14,7 +14,7 @@ let configAbsolutePath = ''
 let config = null
 
 process.argv.forEach(p => {
-  if (/\.html$/.test(p)) {
+  if (/\.(html|js)$/.test(p) && !/pr1\.js$/.test(p)) {
     // 入口
     entry.push(p)
   } else if (p === 'build') {
@@ -39,6 +39,8 @@ if (configPath) {
     config = require(configAbsolutePath)
   }
 }
+
+process.env.PR1_CONFIG = config
 
 if (isBuild) {
   process.env.NODE_ENV = 'production'
