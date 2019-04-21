@@ -60,7 +60,7 @@ if (showHelp) {
   Example:
   pr1 build index.html
   pr1 build index.html --config="./config.js"
-  pr1 build index.html --config="./config.js" --out="./dist/"
   pr1 build index.html detail.html tools.js
+  pr1 build index.html detail.html tools.js --config="./config.js"
   `.grey)
 }

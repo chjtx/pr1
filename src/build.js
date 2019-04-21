@@ -124,7 +124,7 @@ async function compileHTML (config, originIndexPath, distIndexPath) {
 
   // 将 vendors 插入 pr1_module 之前
   const pr1ModuleScript = /^.+pr1_module=1.+$/m.exec(indexHtml)
-  indexHtml = indexHtml.replace(pr1ModuleScript[0], `${vendors.join('\n')}\n${pr1ModuleScript[0]}`)
+  indexHtml = indexHtml.replace(pr1ModuleScript[0], `${vendors.join('\n')}\n${pr1ModuleScript[0]}`).replace('pr1_module=1', '')
 
   // 将index.html里的所有内部路径加上hash
   indexHtml = addSrcHash(indexHtml, distDir)
@@ -156,12 +156,12 @@ module.exports = {
   build: async function (entry, config, configAbsolutePath) {
     // 清空/创建dist目录
     const dist = config.dist
-      ? path.resolve(configAbsolutePath, config.dist)
+      ? path.resolve(path.dirname(configAbsolutePath), config.dist)
       : path.resolve(appRootPath, './dist/')
     if (fs.existsSync(dist)) {
       fs.removeSync(dist)
     }
-    fs.mkdirSync(dist)
+    fs.ensureDirSync(dist)
 
     for (let i = 0; i < entry.length; i++) {
       await compile(entry[i], config, dist)

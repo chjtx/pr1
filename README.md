@@ -57,11 +57,18 @@ module.exports = {
 }
 ```
 
+## 支持 .vue
+
+```
+npm i -D vue vue-template-compiler @vue/component-compiler-utils
+```
+
 ## 注意事项
 
 - 只会替换 import 和 export ，如果 import('jroll') 导入的路径没有`./`、`../`等相对路径，将会从 node_modules 导入
 - 如果同目录存在同名的 html 和 js 文件，则视为 Vue 组件，打包时会自动关联转成 render 函数。js 文件只能用 template: html，不能用其它变量
 - 如果要引用 node_modules 的文件，打包里必须加载 rollup-plugin-node-resolve 插件
+- 所有静态资源路径都应该相对于入口 html 文件
 
 ## 异步加载（未实现）
 

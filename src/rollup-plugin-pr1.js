@@ -1,4 +1,5 @@
 const fs = require('fs-extra')
+const path = require('path')
 const CleanCSS = require('clean-css')
 const { createFilter } = require('rollup-pluginutils')
 const compiler = require('vue-template-compiler')
@@ -95,11 +96,6 @@ module.exports = function () {
         return
       }
 
-      // 给第一个dom注入pathId
-      html = html.replace(/^(<[a-zA-Z]+ )/, (match, tag) => {
-        return `${tag}pr1-path="${pathId}" `
-      })
-
       // style作用域
       const scope = 'x' + count
       if (isScoped) {
@@ -117,7 +113,11 @@ module.exports = function () {
         html = html.replace(/(<[^>]+)(\/?)>/gm, (match, start) => addHTMLScope(match, start, scope))
       }
 
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === 'development') {        
+        // 给第一个dom注入pathId
+        html = html.replace(/^(<[a-zA-Z]+ )/, (match, tag) => {
+          return `${tag}pr1-path="${pathId}" `
+        })
         // 开发环境
         return [
           `pr1.injectStyle(${JSON.stringify(style)}, '${pathId}')`,
@@ -150,6 +150,7 @@ module.exports = function () {
       const cssPath = outputOptions.file.replace(/\.js$/, '.css')
       if (css.length) {
         const output = new CleanCSS().minify(css.join('\n'))
+        fs.ensureDirSync(path.dirname(cssPath))
         fs.writeFileSync(cssPath, output.styles)
         css = []
       }

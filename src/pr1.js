@@ -34,7 +34,7 @@ if (configPath) {
   configAbsolutePath = path.resolve(cwd, configPath)
   config = require(configAbsolutePath)
 } else if (appRootPath) {
-  configAbsolutePath = path.resolve(appRootPath, '.pr1.config.js')
+  configAbsolutePath = path.resolve(appRootPath, 'pr1.config.js')
   if (fs.existsSync(configAbsolutePath)) {
     config = require(configAbsolutePath)
   }
