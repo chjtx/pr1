@@ -3,8 +3,9 @@
 !bin/pr1.js
 !src/build.js
 !src/client.js
+!src/init.js
 !src/parse.js
 !src/pr1.js
 !src/server.js
 !src/rollup-plugin-pr1.js
-!src/pr1.config.template.js
+!template/**

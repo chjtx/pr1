@@ -90,6 +90,8 @@ module.exports = function () {
         if (regResult[2]) {
           isScoped = true
         }
+      } else {
+        html = code
       }
 
       if (html) {

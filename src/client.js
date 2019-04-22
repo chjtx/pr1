@@ -3,34 +3,35 @@
   let isNodeModule = false
 
   function dirname (p) {
-    return p.substr(0, p.lastIndexOf('/'))
+    return p.slice(0, p.lastIndexOf('/'))
   }
-  function resolvePath (p) {
-    var d = dirname(document.baseURI)
+  function resolvePath (currentPath, relativePath) {
+    var dir = dirname(relativePath)
     var path = ''
 
-    if (p.indexOf('.') === 0 || p.indexOf('/') === 0) {
+    if (currentPath.indexOf('.') === 0 || currentPath.indexOf('/') === 0) {
       isNodeModule = false
     } else {
       isNodeModule = true
-      return p
+      return currentPath
     }
 
     // 支持http/https请求
-    if (/^http/.test(p)) {
-      return p
+    if (/^http/.test(currentPath)) {
+      return currentPath
 
     // 相对路径请求
     } else {
-      p = p.replace(/(\.\.\/)|(\.\/)/g, function (match, up) {
+      currentPath = currentPath.replace(/(\.\.\/)|(\.\/)/g, function (match, up) {
         if (up) {
-          d = d.substr(0, d.lastIndexOf('/'))
+          dir = dir.substr(0, dir.lastIndexOf('/'))
         }
         return ''
       })
-      path = (d + '/' + p)
+      path = (dir + '/' + currentPath)
     }
-    return path.replace(window.location.origin, '')
+    // return path.replace(window.location.origin, '')
+    return path
   }
 
   // 加截javascript
@@ -54,7 +55,7 @@
     modules: {},
     // import
     import (path, parentPath) {
-      const uniquePath = resolvePath(path)
+      const uniquePath = resolvePath(path, parentPath)
 
       if (pr1.modules[uniquePath]) {
         return pr1.modules[uniquePath].exports

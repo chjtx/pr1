@@ -1,6 +1,6 @@
 {
   "name": "piaoren",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "which front-end engineering build tools for Vue project",
   "main": "index.js",
   "scripts": {
@@ -24,18 +24,17 @@
     "rollup": "^1.10.0",
     "rollup-pluginutils": "^2.6.0",
     "uglify-js": "^3.5.5",
-    "vue": "^2.6.10",
     "vue-template-compiler": "^2.6.10"
   },
   "devDependencies": {
+    "vue": "^2.6.10",
+    "rollup-plugin-node-resolve": "^4.2.3",
     "eslint": "^5.16.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
-    "jroll": "^2.6.5",
-    "rollup-plugin-node-resolve": "^4.2.3",
-    "rollup-plugin-vue": "^5.0.0"
+    "jroll": "^2.6.5"
   }
 }

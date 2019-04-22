@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-const fs = require('fs')
-const path = require('path')
 require('colors')
 
 const nodeVersion = process.versions.node.split('.')
@@ -26,9 +24,8 @@ for (let i = 0; i < argv.length; i++) {
     break
   } else if (argv[i] === 'init') {
     showHelp = false
-    fs.copyFileSync(path.resolve(__dirname, '../src/pr1.config.template.js'), path.resolve(process.cwd(), 'pr1.config.js'))
-    console.log(`Initialization complete! `.green)
-    process.exit(0)
+    require('../src/init.js')
+    break
   }
 }
 
