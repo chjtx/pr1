@@ -2,6 +2,7 @@
 
 const fs = require('fs')
 const path = require('path')
+require('colors')
 
 const nodeVersion = process.versions.node.split('.')
 let lessThan8 = false
@@ -27,13 +28,11 @@ for (let i = 0; i < argv.length; i++) {
     showHelp = false
     fs.copyFileSync(path.resolve(__dirname, '../src/pr1.config.template.js'), path.resolve(process.cwd(), 'pr1.config.js'))
     console.log(`Initialization complete! `.green)
-    break
+    process.exit(0)
   }
 }
 
 if (showHelp) {
-  require('colors')
-
   console.log(`
   ============== pr1 (Piao Ren) --version ${require('../package.json').version} ===============
   pr1, which front-end engineering build tools for Vue project,
@@ -42,22 +41,19 @@ if (showHelp) {
   `.green)
 
   console.log(`pr1 init`.cyan)
-  console.log(`
-  Example:
+  console.log(`  Example:
   pr1 init
   `.grey)
 
   console.log(`pr1 start [port] [config]`.cyan)
-  console.log(`
-  Example:
+  console.log(`  Example:
   pr1 start
   pr1 start 8686
   pr1 start --config="./config.js"
   `.grey)
 
   console.log(`pr1 build [entry] [config] [output]`.cyan)
-  console.log(`
-  Example:
+  console.log(`  Example:
   pr1 build index.html
   pr1 build index.html --config="./config.js"
   pr1 build index.html detail.html tools.js

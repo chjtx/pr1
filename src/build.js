@@ -31,10 +31,14 @@ async function bundle (input, out, config, outName) {
   }
   // uglify
   if (config.uglifyConfig) {
-    code = uglify.minify(code, config.uglifyConfig).code
+    const uglifyResult = uglify.minify(code, config.uglifyConfig)
+    if (uglifyResult.error) {
+      throw uglifyResult.error
+    } else {
+      code = uglifyResult.code
+    }
   }
 
-  code = code.replace(/\bprocess\.env\.NODE_ENV\b/g, `'${process.env.NODE_ENV}'`)
   fs.outputFileSync(out, code)
   return code
 }

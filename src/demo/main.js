@@ -4,7 +4,7 @@ import { b as abc, o as omg } from './b.js'
 import Vue from 'vue/dist/vue.esm.browser.js'
 import 'jroll/src/jroll.js'
 import d from './d.vue'
-
+// pr1 ignore++
 console.log(a)
 console.log(abc)
 // console.log(bb)
@@ -21,12 +21,12 @@ function opq (txt) {
 async function ddd () {
   console.log(await opq('hello promise'))
 }
-
-pr1.require('./b.js', (data) => {
-  console.log(data)
-})
+// pr1.require('./b.js', (data) => {
+//   console.log(data)
+// })
 
 ddd()
+// pr1 ignore--
 
 omg('123orm')
 

@@ -54,13 +54,18 @@ module.exports = function () {
         return
       }
       if (/\.js$/.test(id)) {
-        // 开发环境直接跳过
-        if (process.env.NODE_ENV === 'development') {
-          return
-        } else if (fs.existsSync(id.replace(/\.js$/, '.html'))) {
-          // 生产环境转为render函数
-          return code.replace(/template: html/, 'render: html.render,\nstaticRenderFns: html.staticRenderFns')
+        // 替换 process.env.NODE_ENV
+        code = code.replace(/\bprocess\.env\.NODE_ENV\b/g, `'${process.env.NODE_ENV}'`)
+        // 生产环境
+        if (process.env.NODE_ENV === 'production') {
+          // 删除 pr1 ignore
+          code = code.replace(/\/\/ pr1 ignore\+\+([\s\S]+)?\/\/ pr1 ignore--/g, '')
+          // 转为render函数
+          if (fs.existsSync(id.replace(/\.js$/, '.html'))) {
+            code = code.replace(/template: html/, 'render: html.render,\nstaticRenderFns: html.staticRenderFns')
+          }
         }
+        return code
       }
 
       const isVue = /\.vue$/.test(id) // .vue文件
@@ -113,12 +118,12 @@ module.exports = function () {
         html = html.replace(/(<[^>]+)(\/?)>/gm, (match, start) => addHTMLScope(match, start, scope))
       }
 
-      if (process.env.NODE_ENV === 'development') {        
+      if (process.env.NODE_ENV === 'development') {
+        // 开发环境
         // 给第一个dom注入pathId
         html = html.replace(/^(<[a-zA-Z]+ )/, (match, tag) => {
           return `${tag}pr1-path="${pathId}" `
         })
-        // 开发环境
         return [
           `pr1.injectStyle(${JSON.stringify(style)}, '${pathId}')`,
           isVue
@@ -127,9 +132,10 @@ module.exports = function () {
         ].join('\n')
       } else {
         // 生产环境
+        // 缓存css
         css.push(style)
+        // html转成render函数
         if ((fs.existsSync(id.replace(/\.html$/, '.js'))) || isVue) {
-          // html转成render函数
           const compiled = compileTemplate({
             source: html,
             filename: '',

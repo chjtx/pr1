@@ -87,5 +87,6 @@ module.exports = function server (port, config) {
     }
   })
   server.listen(port)
-  console.log(`pr1 server run on port: ${port}`.green)
+  console.log(`\nPR1 server run successfully!`.green)
+  console.log(`Server run at:` + ` http://localhost:${port}\n`.cyan)
 }

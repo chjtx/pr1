@@ -63,6 +63,16 @@ module.exports = {
 npm i -D vue vue-template-compiler @vue/component-compiler-utils
 ```
 
+## 注释代码不上生产
+
+```js
+// pr1 ignore++
+console.info(`调试信息`)
+// pr1 ignore--
+```
+
+`// pr1 ignore++`到`// pr1 ignore--`的代码在生产环境会被删除
+
 ## 注意事项
 
 - 只会替换 import 和 export ，如果 import('jroll') 导入的路径没有`./`、`../`等相对路径，将会从 node_modules 导入
