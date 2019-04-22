@@ -69,7 +69,7 @@ module.exports = function () {
       }
 
       const isVue = /\.vue$/.test(id) // .vue文件
-      let isScoped = true
+      let isScoped = false
       let script = ''
       const pathId = id.replace(cwd, '').replace(/\\/g, '/')
 
@@ -87,8 +87,8 @@ module.exports = function () {
             data: style
           }).css.toString()
         }
-        if (isVue && !regResult[2]) {
-          isScoped = false
+        if (regResult[2]) {
+          isScoped = true
         }
       }
 

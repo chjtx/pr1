@@ -4,7 +4,7 @@ import { b as abc, o as omg } from './b.js'
 import Vue from 'vue/dist/vue.esm.browser.js'
 import 'jroll/src/jroll.js'
 import d from './d.vue'
-// pr1 ignore++
+
 console.log(a)
 console.log(abc)
 // console.log(bb)
@@ -26,9 +26,15 @@ async function ddd () {
 // })
 
 ddd()
+// pr1 ignore++
+console.log('// pr1 ignore++')
 // pr1 ignore--
 
 omg('123orm')
+
+var buffer = new ArrayBuffer(16)
+var view1 = new DataView(buffer)
+console.log(view1.getInt8(0))
 
 // eslint-disable-next-line no-new
 new Vue({

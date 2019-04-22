@@ -59,9 +59,7 @@ module.exports = {
 
 ## 支持 .vue
 
-```
-npm i -D vue vue-template-compiler @vue/component-compiler-utils
-```
+默认支持 .vue 文件，并且支持 scoped sass pug
 
 ## 注释代码不上生产
 
