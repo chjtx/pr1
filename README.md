@@ -18,7 +18,7 @@ Vue 项目前端工程构建工具，使用 Rollup 打包
 ## 安装运行
 
 ```
-npm i -D -g pr1
+npm i -g piaoren
 ```
 
 ```

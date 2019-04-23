@@ -2,7 +2,12 @@
   "name": "{{name}}",
   "version": "0.0.1",
   "description": "{{description}}",
+  "scripts": {
+    "dev": "cd src && pr1 start",
+    "build": "cd src && pr1 build index.html"
+  },
   "devDependencies": {
+    "@babel/polyfill": "^7.4.3",
     "colors": "^1.3.3",
     "eslint": "^5.16.0",
     "eslint-config-standard": "^12.0.0",
@@ -10,6 +15,7 @@
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
+    "rollup-plugin-node-resolve": "^4.2.3",
     "vue": "^2.6.10"
   }
 }

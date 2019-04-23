@@ -8,7 +8,7 @@ const cwd = process.cwd()
 
 console.log(`
 Answer some question to initialize.
-You can press `.cyan + ` ctrl + C `.bgMagenta + ` to exit.
+You can press `.cyan + ` ctrl + c `.bgMagenta + ` to exit.
 `.cyan)
 
 const rl = readline.createInterface({
@@ -85,7 +85,7 @@ To get started
 
   cd ${dirName}
   npm install
-  pr1 start
+  npm run dev
 ` +
 `
 
