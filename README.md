@@ -34,6 +34,118 @@ pr1 init
 npm run dev
 ```
 
+- 修改 src/index.html ，添加 `&lt;Layout/&gt; 标签
+
+```html
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>飘刃</title>
+</head>
+<body>
+  <div id="app">
+    <Layout/>
+  </div>
+  <script src="./main.js?pr1_module=1"></script>
+</body>
+</html>
+```
+
+- 修改 src/main.js ，添加 Layout 组件
+
+```js
+// main.js
+import Vue from 'vue/dist/vue.esm.browser.js'
+import Layout from './pages/Layout.vue'
+
+// eslint-disable-next-line no-new
+new Vue({
+  el: '#app',
+  components: {
+    Layout
+  }
+})
+```
+
+- 创建 src/pages 目录，并添加 src/pages/Layout.vue 文件
+
+```html
+<!-- pages/Layout.vue -->
+<template lang="pug">
+div
+  div.top
+    input(v-model="text")
+    button(@click="submit") 添加
+  ul
+    Item(v-for="(i, k) in items" :name="i" :key="k")
+</template>
+<script>
+import Item from './Item.js'
+export default {
+  components: {
+    Item
+  },
+  data () {
+    return {
+      text: '',
+      items: []
+    }
+  },
+  methods: {
+    submit () {
+      this.items.push(this.text)
+      this.text = ''
+    }
+  }
+}
+</script>
+<style lang="sass" scoped>
+$bg: #ccc;
+
+.top {
+  padding: 20px;
+  background: $bg;
+}
+</style>
+```
+
+- 创建 src/pages/Item.js
+
+```js
+// pages/Item.js
+import html from './Item.html'
+
+export default {
+  template: html,
+  props: {
+    name: String
+  }
+}
+```
+
+- 创建 src/pages/Item.html
+
+```html
+<!-- pages/Item.html -->
+<li class="item">{{ name }}</li>
+
+<style scoped>
+.item {
+  background: #eee;
+}
+</style>
+```
+
+在浏览器访问 http://localhost:8686/
+
+> 以上例子演示了两个写 Vue 组件的方法
+>
+> 一、使用 .vue 文件，目前 .vue 文件只支持普通的 html/css/js 和 sass/pug ，不支持 less/typescript 等。
+>
+> 二、使用 html 和 js 两个文件写 Vue 组件，如果存在同路径同名的两个文件，例：Component.html 和 Component.js，则飘刃会把这两个文件处理成 Vue 组件。需要注意的是，这种方式的 html 文件不包括 script ，所以不需要 template 标签，直接写 div ，也不支持 pug。
 
 
 开发完成后，使用以下命令打包
@@ -41,6 +153,8 @@ npm run dev
 ```sh
 npm run build
 ```
+
+打包完成后可在 dist 目录双击 index.html 到浏览器访问，如果项目包含 ajax 请求，file:// 协议文件无法跨域，可以在 dist 目录运行 pr1 start 8080 开启飘刃服务，在浏览器访问 http://localhost:8080/
 
 ## 命令说明
 
@@ -100,7 +214,16 @@ pr1 build page1/index.html page2/index.html # 在打包后也会保持同样结�
 
 ## 攒助作者
 
-支持作者继续维护更新，如果有足够的支持，飘刃将来将会支持 React、TypeScript、热更新、异步模块等
+支持作者继续维护更新，编辑更多教程和使用技巧。如果有足够的支持，飘刃将来将会支持 React、TypeScript、热更新、异步模块等等。
+
+__支持方式__
+
+1、购买好货记产品，好货记是作者目前创业的产物
+
+2、打赏1块几毛钱，让作者不用去天桥底蹲位
+
+
+
 
 内含支持含作用域的 style、 html 和 vue 插件 rollup-plugin-pr1
 
