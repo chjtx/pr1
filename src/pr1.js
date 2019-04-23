@@ -23,7 +23,7 @@ process.argv.forEach(p => {
   } else if (p.indexOf('--config=') === 0) {
     // 配置
     configPath = p.split('=')[1].replace(/^('|")|\1$/g, '')
-  } else if (/\.(html|js)$/.test(p) && !/pr1\.js$/.test(p)) {
+  } else if (/\.(html|js)$/.test(p) && !/\bpr1\.js$/.test(p)) {
     // 入口
     entry.push(p)
   }

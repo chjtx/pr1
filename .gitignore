@@ -1,3 +1,4 @@
 node_modules/
 dist/
-bin/pr1.config.js
+bin/**/**
+!bin/pr1.js

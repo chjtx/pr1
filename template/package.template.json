@@ -1,6 +1,7 @@
 {
-  "name": "your-app",
+  "name": "{{name}}",
   "version": "0.0.1",
+  "description": "{{description}}",
   "devDependencies": {
     "colors": "^1.3.3",
     "eslint": "^5.16.0",
