@@ -2,6 +2,106 @@
 
 Vue 项目前端工程构建工具，使用 Rollup 打包
 
+## 特点优势
+
+- 源码少，除去第三方工具，飘刃所有核心代码共8个文件不到1000行，看源码不头疼
+- 速度快，开发过程中无需 babel 转译，飘刃只转 import/export ，其余直接输出到浏览器 
+- 效率高，使用谷歌浏览器 99% 源码调试，无需 source map ，告别组件 this 乱指 window
+- 够直观，开发环境可在浏览器 Elements 调试板块直接从 dom 属性找到组件对应的文件位置
+- 体积小，生产代码使用 rollup 打包，摇树优化，没用代码全靠边，再上 uglify 高效压缩
+
+## 快速上手
+
+```sh
+npm i -g piaoren
+```
+
+把飘刃安装到全局，任意目录都可以运行飘刃的命令 `pr1 `
+
+```sh
+pr1 init
+
+? Project name:           # 项目名称至少两个字符，由大小写字母、中划
+                          # 线、下划线，及数字组成，数字不能为首字符
+? Project description:    # 可不填
+```
+
+将会自动生成项目名称命名的文件夹，包含若干工程文件
+
+进入工程目录，执行以下命令开启开发模式
+
+```sh
+npm run dev
+```
+
+
+
+开发完成后，使用以下命令打包
+
+```sh
+npm run build
+```
+
+## 命令说明
+
+```sh
+# 创建项目，初始化工程文件
+
+pr1 init
+```
+
+```sh
+# 开启飘刃服务，在哪个目录开启，哪个目录就是根站点
+# 可在浏览器访问该站点文件，相当于微型静态服务器
+# 将会拦截所有带 pr1_module=1 参数的 url 进行文件处理
+# 用于开发环境
+
+pr1 start [port] [config]
+
+# 示例
+
+pr1 start     # 默认 8686 端口，工程根目录的 pr1.config.js 配置文件
+pr1 start 8080  # 指定 8080 端口
+pr1 start --config="./config.js" # 指定 ./config.js 配置文件
+pr1 start 8080 --config="./config.js" # 指定端口和配置文件
+```
+
+```sh
+# 使用 build 命令打包，必须指定入口文件，只能是 html 和 js 文件
+# 可以同时打包多个模块
+# 如果是 html 文件，将会自动解决 html 里的入口文件及复制静态资源
+# 如果是 js 文件，只会解决该 js 文件及其依赖，不会复制静态资源
+# 入口文件目录与打包后的文件目录结构相同
+
+pr1 build [entry] [config]
+
+# 示例
+
+pr1 build index.html # 使用默认配置文件打包
+pr1 build index.html --config="./config.js" # 使用指定配置文件
+pr1 build index.html detail.html tools.js   # 同时打包3个文件
+pr1 build index.html detail.html tools.js --config="./config.js"
+pr1 build page1/index.html page2/index.html # 在打包后也会保持同样结构
+```
+
+## 配置说明
+
+## 运作原理
+
+## 文件支持
+
+## 静态资源
+
+## 多页应用
+
+## 注意事项
+
+## 更新日志
+
+## 攒助作者
+
+支持作者继续维护更新，如果有足够的支持，飘刃将来将会支持 React、TypeScript、热更新、异步模块等
+
 内含支持含作用域的 style、 html 和 vue 插件 rollup-plugin-pr1
 
 ## 进度

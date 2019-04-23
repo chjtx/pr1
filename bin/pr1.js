@@ -49,7 +49,7 @@ if (showHelp) {
   pr1 start --config="./config.js"
   `.grey)
 
-  console.log(`pr1 build [entry] [config] [output]`.cyan)
+  console.log(`pr1 build [entry] [config]`.cyan)
   console.log(`  Example:
   pr1 build index.html
   pr1 build index.html --config="./config.js"
