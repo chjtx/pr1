@@ -34,7 +34,7 @@ module.exports = {
       ]
     ]
   },
-  // uglify 选项，不提供将不会压缩，如果 babel 转码后仍存在 ES6+ uglify 解释不了的代码将会压缩失败
+  // uglify 选项，不提供将不会压缩，如果 babel 转码后仍存在 ES6+ 代码，uglify 解释不了将会压缩失败
   uglifyConfig: {
     toplevel: true
   },

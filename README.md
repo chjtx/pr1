@@ -200,117 +200,211 @@ pr1 build page1/index.html page2/index.html # 在打包后也会保持同样结�
 
 ## 配置说明
 
-## 运作原理
-
-## 文件支持
-
-## 静态资源
-
-## 多页应用
-
-## 注意事项
-
-## 更新日志
-
-## 攒助作者
-
-支持作者继续维护更新，编辑更多教程和使用技巧。如果有足够的支持，飘刃将来将会支持 React、TypeScript、热更新、异步模块等等。
-
-__支持方式__
-
-1、购买好货记产品，好货记是作者目前创业的产物
-
-2、打赏1块几毛钱，让作者不用去天桥底蹲位
-
-
-
-
-内含支持含作用域的 style、 html 和 vue 插件 rollup-plugin-pr1
-
-## 进度
-
-- [x] 全局命令
-- [x] import和export语法解释
-- [x] 配置文件 Rollup 插件的 transform 支持
-- [x] 配置文件的 beforeBuild 和 afterBuild 钩子
-- [x] 编写 Rollup 插件以支持 html 等文件 rollup-plugin-pr1
-- [x] 使 rollup-plugin-pr1 插件支持 .vue 文件
-- [x] 提取 node_modules 的文件到外部
-- [ ] 异步加载
-
-## 安装运行
-
-```
-npm i -g piaoren
-```
-
-```
-pr1 start 8686
-pr1 start --config="./config.js"
-pr1 build index.html
-pr1 build index.html --config="./config.js"
-pr1 build index.html --config="./config.js" --out="./dist/"
-pr1 build index.html detail.html tools.js
-```
-
-## 配置
-
-.pr1.config.js
-
 ```js
+const nodeResolve = require('rollup-plugin-node-resolve')
+require('colors')
+
 module.exports = {
-  vendor: [ // [0]是开发环境用的，[1]是生产环境用的，如果没有[1]生产环境也用[0]
-    ['vue.js', 'vue.min.js']
+  // vendor 子项的第一个值将会整合到 rollup 的 external
+  // [0]是开发环境用的，[1]是生产环境用的，如果没有[1]生产环境也用[0]
+  vendor: [
+    ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.min.js']
   ],
-  dist: '', // 相对于配置文件的打包路径
-  static: ['./images'], // 相对于入口html文件，保持目录结构拷贝到打包目标文件夹
-  rollupConfig: {           // 打包时用到的 Rollup 配置，input 和 output 的 file 选项是无效的
+  // dist 打包后文件输出目录，路径应相对于当前配置文件
+  dist: '',
+  // static 静态文件，路径应相对于 html 入口文件
+  static: [],
+  // rollup 选项，必须有
+  rollupConfig: {
+    // 定义了 vendor，再定义 globals，这样 rollup 会把相关的 vendor 转换成 Vue 作为外部资源处理
     globals: {
-      'vue.js': 'Vue'
-    }
-    plugins: [ plugin() ],    // 配置 Rollup 的插件，飘刃也会用到
+      'vue/dist/vue.esm.browser.js': 'Vue'
+    },
+    plugins: [
+      // rollup-plugin-node-resolve 用于 rollup 解决引用 node_modules 块资源使用
+      // 飘刃在开发环境不需要该模块，但是打包需要
+      nodeResolve()
+    ]
   },
-  babelConfig: {},
-  beforeBuild: async function (originFile) {
-
+  // babel 选项，不提供将不会进行转码，不使用 uglify 压缩时，可安装 babel 的 minify 插件压缩
+  babelConfig: {
+    presets: [
+      [
+        '@babel/env', {
+          modules: false,
+          targets: {
+            ie: '9',
+            chrome: '49'
+          }
+        }
+      ]
+    ]
   },
-  afterBuild: async function (targetFile) {
-
+  // uglify 选项，不提供将不会压缩，如果 babel 转码后仍存在 ES6+ 代码，uglify 解释不了将会压缩失败
+  uglifyConfig: {
+    toplevel: true
+  },
+  // 打包前的钩子
+  beforeBuild: async function (originDir) {
+    console.log(`开始打包：`.green + `${originDir}`.cyan)
+  },
+  // 打包后的钩子
+  afterBuild: async function (distDir) {
+    console.log(`完成打包：`.green + `${distDir}`.cyan)
   }
 }
 ```
 
-## 支持 .vue
+## 运作原理
 
-默认支持 .vue 文件，并且支持 scoped sass pug
+飘刃会拦截所有带有 pr1_module=1 参数的 url ，并处理对应的文件资源，目前只会处理 .vue .html .js 3种文件
 
-## 注释代码不上生产
+把 import/export 转换成 async/await 让浏览器可以支持引入除 js 外的其它源码
+
+飘刃会把非 js 资源通过 rollup 的插件转换成 js 资源再传到浏览器，开发环境只会调用 rollup 插件的 transform 方法
+
+import/export 转换关系如下：
 
 ```js
-// pr1 ignore++
-console.info(`调试信息`)
-// pr1 ignore--
+// import 规则
+import { a, b, c } from './util.js'             => const { a, b, c } = await _import('./util.js')
+import { abc as a, efg as b } from './util.js'  => const { abc: a, efg: b } = await _import('./util.js')
+import a from './util.js'                       => const { default: a } = await _import('./util.js')
+import './util.js'                              => await _import('./util.js')
+import * as a from './util.js'                  => const a = await _import('./util.js')
+```
+
+```js
+// export 规则
+ export var a = 'xxx'                     => exports['/xx.js'].a = 'xxx'
+ export { a, b, c }                       => Object.assign(exports['/xx.js'], {a, b, c})
+ export function a () {}                  => exports['/xx.js'].a = function a () {}
+ export default a                         => exports['/xx.js'].default = a
+ export { abc as a }                      => Object.assign(exports['/xx.js'], {a: abc} = { a })
+ export class e {}                        => exports['/xx.js'].e = class e {}
+```
+
+## 静态资源
+
+所有在 html 或 css 引入的静态资源，路径都是相对于入口 html 文件，
+如下目录结构
+
+```sh
+src/
+  |-- index.html
+  |-- static/
+    |-- images/
+      |-- a.png
+  |-- pages/
+    |-- one/
+      |-- two/
+        |-- three/
+          |-- a.vue # background-url: ./static/images/a.png
+    |-- b.html  # img src="./static/images/a.png"
+    |-- b.js
+```
+
+如上所示，a.vue 和 b.html 在不同的目录路径上，但是引入相同的 a.png 文件，都是使用相同的相对于 index.html 的路径
+
+## 多页应用
+
+飘刃处理多面应用非常简单，如下目录结构
+
+```sh
+src/
+  |-- page1/
+    |-- index.html
+  |-- page3/
+    |-- index.html
+  |-- page3/
+    |-- index.html
+```
+
+开发环境，在 src 目录执行 `pr1 start`
+
+在浏览器分别访问
+
+http://localhost:8686/page1/
+
+http://localhost:8686/page2/
+
+http://localhost:8686/page3/
+
+生产环境，在 src 目录执行 `pr1 build page1/index.html page2/index.html page3/index.html`
+
+在 dist 目录会保持以下目录结构
+
+```sh
+dist/
+  |-- page1/
+    |-- index.html
+  |-- page3/
+    |-- index.html
+  |-- page3/
+    |-- index.html
+```
+
+## 生产注释
+
+如下示例：
+
+```js
+doSome(data => {
+  // pr1 ignore++
+  console.info(`调试信息:${data}`)
+  // pr1 ignore--
+  doIt(data)
+})
 ```
 
 `// pr1 ignore++`到`// pr1 ignore--`的代码在生产环境会被删除
 
-## 注意事项
-
-- 只会替换 import 和 export ，如果 import('jroll') 导入的路径没有`./`、`../`等相对路径，将会从 node_modules 导入
-- 如果同目录存在同名的 html 和 js 文件，则视为 Vue 组件，打包时会自动关联转成 render 函数。js 文件只能用 template: html，不能用其它变量
-- 如果要引用 node_modules 的文件，打包里必须加载 rollup-plugin-node-resolve 插件
-- 所有静态资源路径都应该相对于入口 html 文件
-
-## 异步加载（未实现）
-
 ```js
-pr1.require(`../xxx.js`, () => {
-
+doSome(data => {
+  doIt(data)
 })
 ```
 
-打包时，遇到 `pr1.require` ，rollup 会自动根据 require 的内容合并文件，所以异步加载必须使用 `pr1.require` 字眼
+## 注意事项
 
-## 关于分包和公共文件
+- 开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径没有`./`、`../`等相对路径，将会从项目根目录的 node_modules 导入
+- 如果要引用 node_modules 的文件，打包里必须加载 rollup-plugin-node-resolve 插件
+- 所有静态资源路径都应该相对于入口 html 文件
+- 如果要使用 sass 或 scoped，必须保持严格格式，只允许`<style lang="sass" scoped>`、`<style lang="sass">`、`<style scoped>`，不允许`<style scoped lang="sass">`，同理如果要使用 pug ，必须书写成`<template lang="pug">`，不允许多空格或少空格
+- 如果同目录存在同名的 html 和 js 文件，则视为 Vue 组件，打包时会自动关联转成 render 函数。同名 js 文件只能用 template: html，不能用其它变量
 
-分包即异步加载模块，建议入口文件同步加载公共文件，业务代码分包加载
+  ```js
+  // html/js 的 Vue 组件只能用 html 作为变量名引入同名 html 文件
+  import html from './sameName.html'
+
+  export default {
+    template: html
+  }
+  ```
+
+
+## 更新日志
+
+\### v0.0.10 (2019-04-24)
+
+- 完成文档，上线
+
+## 攒助作者
+
+支持作者继续维护更新，编写更多教程和使用技巧。如果有足够的支持，飘刃将来将会支持 React、TypeScript、热更新、异步模块等等。
+
+__支持方式__
+
+1、购买好货记产品，好货记是作者目前创业的产物，地址：<a target="_blank" href="https://goodgoodsbook.com/">https://goodgoodsbook.com/</a>
+
+2、打赏1块几毛钱，让作者不用去天桥底蹲位
+
+<img src="https://goodgoodsbook.com/imgs/alipay.jpg" style="width:300px">
+
+<img src="https://goodgoodsbook.com/imgs/wxpay.png" style="width:300px;float:left;">
+
+<div style="clear:both;height:24px;"></div>
+
+## 开源协议
+
+MIT
