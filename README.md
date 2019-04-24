@@ -6,7 +6,7 @@ Vue 项目前端工程构建工具，使用 Rollup 打包
 
 - 源码少，除去第三方工具，飘刃所有核心代码共8个文件不到1000行，看源码不头疼
 - 速度快，开发过程中无需 babel 转译，飘刃只转 import/export ，其余直接输出到浏览器 
-- 效率高，使用谷歌浏览器 99% 源码调试，无需 source map ，告别组件 this 乱指 window
+- 效率高，使用谷歌浏览器 99.9% 源码调试，无需 source map ，告别组件 this 乱指 window
 - 够直观，开发环境可在浏览器 Elements 调试板块直接从 dom 属性找到组件对应的文件位置
 - 体积小，生产代码使用 rollup 打包，摇树优化，没用代码全靠边，再上 uglify 高效压缩
 
@@ -21,8 +21,7 @@ npm i -g piaoren
 ```sh
 pr1 init
 
-? Project name:           # 项目名称至少两个字符，由大小写字母、中划
-                          # 线、下划线，及数字组成，数字不能为首字符
+? Project name:           # 项目名称至少两个字符，由大小写字母、中划线、下划线，及数字组成，数字不能为首字符
 ? Project description:    # 可不填
 ```
 
@@ -141,9 +140,9 @@ export default {
 
 在浏览器访问 http://localhost:8686/
 
-> 以上例子演示了两个写 Vue 组件的方法
+> 以上例子演示了两种写 Vue 组件的方法
 >
-> 一、使用 .vue 文件，目前 .vue 文件只支持普通的 html/css/js 和 sass/pug ，不支持 less/typescript 等。
+> 一、使用 .vue 文件，目前 .vue 文件只支持普通的 html/css/js 和 sass/pug ，不支持 less/typescript 等。注意 Layout.vue 的 pug ，首行第一个位置不能是空格，即不能缩进。
 >
 > 二、使用 html 和 js 两个文件写 Vue 组件，如果存在同路径同名的两个文件，例：Component.html 和 Component.js，则飘刃会把这两个文件处理成 Vue 组件。需要注意的是，这种方式的 html 文件不包括 script ，所以不需要 template 标签，直接写 div ，也不支持 pug。
 
@@ -194,13 +193,14 @@ pr1 build [entry] [config]
 pr1 build index.html # 使用默认配置文件打包
 pr1 build index.html --config="./config.js" # 使用指定配置文件
 pr1 build index.html detail.html tools.js   # 同时打包3个文件
-pr1 build index.html detail.html tools.js --config="./config.js"
+pr1 build index.html detail.html tools.js --config="./config.js" # 使用指定配置打包3个文件
 pr1 build page1/index.html page2/index.html # 在打包后也会保持同样结构
 ```
 
 ## 配置说明
 
 ```js
+// pr1.config.js
 const nodeResolve = require('rollup-plugin-node-resolve')
 require('colors')
 
@@ -216,13 +216,13 @@ module.exports = {
   static: [],
   // rollup 选项，必须有
   rollupConfig: {
-    // 定义了 vendor，再定义 globals，这样 rollup 会把相关的 vendor 转换成 Vue 作为外部资源处理
+    // 定义了 vendor，再定义 globals，这样 rollup 会把相关的 vendor 转换成全局变量作为外部资源处理
     globals: {
       'vue/dist/vue.esm.browser.js': 'Vue'
     },
     plugins: [
-      // rollup-plugin-node-resolve 用于 rollup 解决引用 node_modules 块资源使用
-      // 飘刃在开发环境不需要该模块，但是打包需要
+      // rollup-plugin-node-resolve 用于 rollup 解决引用 node_modules 资源使用
+      // 飘刃在开发环境不会运行该模块，打包会自动执行
       nodeResolve()
     ]
   },
@@ -259,7 +259,7 @@ module.exports = {
 
 飘刃会拦截所有带有 pr1_module=1 参数的 url ，并处理对应的文件资源，目前只会处理 .vue .html .js 3种文件
 
-把 import/export 转换成 async/await 让浏览器可以支持引入除 js 外的其它源码
+把 import/export 转换成 async/await 让浏览器可以支持引入除 js 外的其它资源
 
 飘刃会把非 js 资源通过 rollup 的插件转换成 js 资源再传到浏览器，开发环境只会调用 rollup 插件的 transform 方法
 
@@ -276,12 +276,12 @@ import * as a from './util.js'                  => const a = await _import('./ut
 
 ```js
 // export 规则
- export var a = 'xxx'                     => exports['/xx.js'].a = 'xxx'
- export { a, b, c }                       => Object.assign(exports['/xx.js'], {a, b, c})
- export function a () {}                  => exports['/xx.js'].a = function a () {}
- export default a                         => exports['/xx.js'].default = a
- export { abc as a }                      => Object.assign(exports['/xx.js'], {a: abc} = { a })
- export class e {}                        => exports['/xx.js'].e = class e {}
+ export var a = 'xxx'                           => exports['/xx.js'].a = 'xxx'
+ export { a, b, c }                             => Object.assign(exports['/xx.js'], {a, b, c})
+ export function a () {}                        => exports['/xx.js'].a = function a () {}
+ export default a                               => exports['/xx.js'].default = a
+ export { abc as a }                            => Object.assign(exports['/xx.js'], {a: abc} = { a })
+ export class e {}                              => exports['/xx.js'].e = class e {}
 ```
 
 ## 静态资源
@@ -314,7 +314,7 @@ src/
 src/
   |-- page1/
     |-- index.html
-  |-- page3/
+  |-- page2/
     |-- index.html
   |-- page3/
     |-- index.html
@@ -338,7 +338,7 @@ http://localhost:8686/page3/
 dist/
   |-- page1/
     |-- index.html
-  |-- page3/
+  |-- page2/
     |-- index.html
   |-- page3/
     |-- index.html
@@ -368,7 +368,7 @@ doSome(data => {
 ## 注意事项
 
 - 开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径没有`./`、`../`等相对路径，将会从项目根目录的 node_modules 导入
-- 如果要引用 node_modules 的文件，打包里必须加载 rollup-plugin-node-resolve 插件
+- 如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件用以打包
 - 所有静态资源路径都应该相对于入口 html 文件
 - 如果要使用 sass 或 scoped，必须保持严格格式，只允许`<style lang="sass" scoped>`、`<style lang="sass">`、`<style scoped>`，不允许`<style scoped lang="sass">`，同理如果要使用 pug ，必须书写成`<template lang="pug">`，不允许多空格或少空格
 - 如果同目录存在同名的 html 和 js 文件，则视为 Vue 组件，打包时会自动关联转成 render 函数。同名 js 文件只能用 template: html，不能用其它变量
@@ -399,9 +399,9 @@ __支持方式__
 
 2、打赏1块几毛钱，让作者不用去天桥底蹲位
 
-<img src="https://goodgoodsbook.com/imgs/alipay.jpg" style="width:300px">
+<img src="https://goodgoodsbook.com/imgs/alipay.jpg" width="300">
 
-<img src="https://goodgoodsbook.com/imgs/wxpay.png" style="width:300px;float:left;">
+<img src="https://goodgoodsbook.com/imgs/wxpay.png" width="300">
 
 <div style="clear:both;height:24px;"></div>
 
