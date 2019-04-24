@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>飘刃</title>
+  <link rel="stylesheet" href="./vs2015.css">
+  <style>
+  body {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Microsoft Yahei", "Hiragino Sans GB", "WenQuanYi Micro Hei", sans-serif;
+    line-height: 1.75;
+    margin-right: 150px;
+    color: #2a2a2a;
+  }
+  code {
+    font-family: Consolas;
+    font-size: 14px;
+  }
+  .content {
+    padding: 20px;
+    max-width: 882px;
+    margin: 0 auto;
+  }
+  #ad {
+    border: none;
+    width: 100%;
+    position: fixed;
+    right: 10px;
+    top: 138px;
+    width: 120px;
+    height: 600px;
+  }
+  @media screen and (max-width: 768px) {
+    #ad {
+      top: auto;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 48px;
+    }
+    .content {
+      width: 100%;
+      position: absolute;
+      box-sizing: border-box;
+      padding-bottom: 100px;
+    }
+  }
+  </style>
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?13d1748106859cff17352f69a8fa8457";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+</head>
+<body>
+  <a target="_blank" href="https://github.com/chjtx/pr1"><img style="position: fixed; top: 0; right: 0; border: 0; z-index: 9"
+      src="http://www.chjtx.com/assets/images/jtaro-github-ribbon.png"></a>
+  <div class="content">{{content}}</div>
+  <iframe id="ad" frameborder="no" marginwidth="0" marginheight="0" scrolling="no" src="//www.chjtx.com/JTaro/ad.html?v=1"></iframe>
+</body>
+</html>

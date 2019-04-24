@@ -27,6 +27,8 @@
     "vue-template-compiler": "^2.6.10"
   },
   "devDependencies": {
+    "highlight.js": "^9.15.6",
+    "markdown-it": "^8.4.2",
     "vue": "^2.6.10",
     "rollup-plugin-node-resolve": "^4.2.3",
     "eslint": "^5.16.0",

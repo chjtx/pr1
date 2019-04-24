@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>飘刃</title>
+  <link rel="stylesheet" href="./vs2015.css">
+  <style>
+  body {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Microsoft Yahei", "Hiragino Sans GB", "WenQuanYi Micro Hei", sans-serif;
+    line-height: 1.75;
+    margin-right: 150px;
+    color: #2a2a2a;
+  }
+  code {
+    font-family: Consolas;
+    font-size: 14px;
+  }
+  .content {
+    padding: 20px;
+    max-width: 882px;
+    margin: 0 auto;
+  }
+  #ad {
+    border: none;
+    width: 100%;
+    position: fixed;
+    right: 10px;
+    top: 138px;
+    width: 120px;
+    height: 600px;
+  }
+  @media screen and (max-width: 768px) {
+    #ad {
+      top: auto;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 48px;
+    }
+    .content {
+      width: 100%;
+      position: absolute;
+      box-sizing: border-box;
+      padding-bottom: 100px;
+    }
+  }
+  </style>
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?13d1748106859cff17352f69a8fa8457";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+</head>
+<body>
+  <a target="_blank" href="https://github.com/chjtx/pr1"><img style="position: fixed; top: 0; right: 0; border: 0; z-index: 9"
+      src="http://www.chjtx.com/assets/images/jtaro-github-ribbon.png"></a>
+  <div class="content"><h1>飘刃 (Piao Ren)</h1>
+<p>Vue 项目前端工程构建工具，使用 Rollup 打包</p>
+<h2>特点优势</h2>
+<ul>
+<li>源码少，除去第三方工具，飘刃所有核心代码共8个文件不到1000行，看源码不头疼</li>
+<li>速度快，开发过程中无需 babel 转译，飘刃只转 import/export ，其余直接输出到浏览器</li>
+<li>效率高，使用谷歌浏览器 99.9% 源码调试，无需 source map ，告别组件 this 乱指 window</li>
+<li>够直观，开发环境可在浏览器 Elements 调试板块直接从 dom 属性找到组件对应的文件位置</li>
+<li>体积小，生产代码使用 rollup 打包，摇树优化，没用代码全靠边，再上 uglify 高效压缩</li>
+</ul>
+<h2>快速上手</h2>
+<pre class="hljs"><code>npm i -g piaoren
+</code></pre>
+<p>把飘刃安装到全局，任意目录都可以运行飘刃的命令 <code>pr1</code></p>
+<pre class="hljs"><code>pr1 init
+
+? Project name:           <span class="hljs-comment"># 项目名称至少两个字符，由大小写字母、中划线、下划线，及数字组成，数字不能为首字符</span>
+? Project description:    <span class="hljs-comment"># 可不填</span>
+</code></pre>
+<p>将会自动生成项目名称命名的文件夹，包含若干工程文件</p>
+<p>进入工程目录，执行以下命令开启开发模式</p>
+<pre class="hljs"><code>npm run dev
+</code></pre>
+<ul>
+<li>修改 src/index.html ，添加 `&lt;Layout/&gt; 标签</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-comment">&lt;!-- index.html --&gt;</span>
+<span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">"zh-CN"</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">"UTF-8"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"viewport"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"width=device-width, initial-scale=1.0"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>飘刃<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"app"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Layout</span>/&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"./main.js?pr1_module=1"</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<ul>
+<li>修改 src/main.js ，添加 Layout 组件</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-comment">// main.js</span>
+<span class="hljs-keyword">import</span> Vue <span class="hljs-keyword">from</span> <span class="hljs-string">'vue/dist/vue.esm.browser.js'</span>
+<span class="hljs-keyword">import</span> Layout <span class="hljs-keyword">from</span> <span class="hljs-string">'./pages/Layout.vue'</span>
+
+<span class="hljs-comment">// eslint-disable-next-line no-new</span>
+<span class="hljs-keyword">new</span> Vue({
+  <span class="hljs-attr">el</span>: <span class="hljs-string">'#app'</span>,
+  <span class="hljs-attr">components</span>: {
+    Layout
+  }
+})
+</code></pre>
+<ul>
+<li>创建 src/pages 目录，并添加 src/pages/Layout.vue 文件</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-comment">&lt;!-- pages/Layout.vue --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">"pug"</span>&gt;</span>
+div
+  div.top
+    input(v-model="text")
+    button(@click="submit") 添加
+  ul
+    Item(v-for="(i, k) in items" :name="i" :key="k")
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> Item <span class="hljs-keyword">from</span> <span class="hljs-string">'./Item.js'</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-attr">components</span>: {
+    Item
+  },
+  data () {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-attr">text</span>: <span class="hljs-string">''</span>,
+      <span class="hljs-attr">items</span>: []
+    }
+  },
+  <span class="hljs-attr">methods</span>: {
+    submit () {
+      <span class="hljs-keyword">this</span>.items.push(<span class="hljs-keyword">this</span>.text)
+      <span class="hljs-keyword">this</span>.text = <span class="hljs-string">''</span>
+    }
+  }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">style</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">"sass"</span> <span class="hljs-attr">scoped</span>&gt;</span><span class="undefined">
+$bg: #ccc;
+
+.top {
+  padding: 20px;
+  background: $bg;
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+</code></pre>
+<ul>
+<li>创建 src/pages/Item.js</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-comment">// pages/Item.js</span>
+<span class="hljs-keyword">import</span> html <span class="hljs-keyword">from</span> <span class="hljs-string">'./Item.html'</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-attr">template</span>: html,
+  <span class="hljs-attr">props</span>: {
+    <span class="hljs-attr">name</span>: <span class="hljs-built_in">String</span>
+  }
+}
+</code></pre>
+<ul>
+<li>创建 src/pages/Item.html</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-comment">&lt;!-- pages/Item.html --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"item"</span>&gt;</span>{{ name }}<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">style</span> <span class="hljs-attr">scoped</span>&gt;</span><span class="css">
+<span class="hljs-selector-class">.item</span> {
+  <span class="hljs-attribute">background</span>: <span class="hljs-number">#eee</span>;
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+</code></pre>
+<p>在浏览器访问 http://localhost:8686/</p>
+<blockquote>
+<p>以上例子演示了两种写 Vue 组件的方法</p>
+<p>一、使用 .vue 文件，目前 .vue 文件只支持普通的 html/css/js 和 sass/pug ，不支持 less/typescript 等。注意 Layout.vue 的 pug ，首行第一个位置不能是空格，即不能缩进。</p>
+<p>二、使用 html 和 js 两个文件写 Vue 组件，如果存在同路径同名的两个文件，例：Component.html 和 Component.js，则飘刃会把这两个文件处理成 Vue 组件。需要注意的是，这种方式的 html 文件不包括 script ，所以不需要 template 标签，直接写 div ，也不支持 pug。</p>
+</blockquote>
+<p>开发完成后，使用以下命令打包</p>
+<pre class="hljs"><code>npm run build
+</code></pre>
+<p>打包完成后可在 dist 目录双击 index.html 到浏览器访问，如果项目包含 ajax 请求，file:// 协议文件无法跨域，可以在 dist 目录运行 pr1 start 8080 开启飘刃服务，在浏览器访问 http://localhost:8080/</p>
+<h2>命令说明</h2>
+<pre class="hljs"><code><span class="hljs-comment"># 创建项目，初始化工程文件</span>
+
+pr1 init
+</code></pre>
+<pre class="hljs"><code><span class="hljs-comment"># 开启飘刃服务，在哪个目录开启，哪个目录就是根站点</span>
+<span class="hljs-comment"># 可在浏览器访问该站点文件，相当于微型静态服务器</span>
+<span class="hljs-comment"># 将会拦截所有带 pr1_module=1 参数的 url 进行文件处理</span>
+<span class="hljs-comment"># 用于开发环境</span>
+
+pr1 start [port] [config]
+
+<span class="hljs-comment"># 示例</span>
+
+pr1 start     <span class="hljs-comment"># 默认 8686 端口，工程根目录的 pr1.config.js 配置文件</span>
+pr1 start 8080  <span class="hljs-comment"># 指定 8080 端口</span>
+pr1 start --config=<span class="hljs-string">"./config.js"</span> <span class="hljs-comment"># 指定 ./config.js 配置文件</span>
+pr1 start 8080 --config=<span class="hljs-string">"./config.js"</span> <span class="hljs-comment"># 指定端口和配置文件</span>
+</code></pre>
+<pre class="hljs"><code><span class="hljs-comment"># 使用 build 命令打包，必须指定入口文件，只能是 html 和 js 文件</span>
+<span class="hljs-comment"># 可以同时打包多个模块</span>
+<span class="hljs-comment"># 如果是 html 文件，将会自动解决 html 里的入口文件及复制静态资源</span>
+<span class="hljs-comment"># 如果是 js 文件，只会解决该 js 文件及其依赖，不会复制静态资源</span>
+<span class="hljs-comment"># 入口文件目录与打包后的文件目录结构相同</span>
+
+pr1 build [entry] [config]
+
+<span class="hljs-comment"># 示例</span>
+
+pr1 build index.html <span class="hljs-comment"># 使用默认配置文件打包</span>
+pr1 build index.html --config=<span class="hljs-string">"./config.js"</span> <span class="hljs-comment"># 使用指定配置文件</span>
+pr1 build index.html detail.html tools.js   <span class="hljs-comment"># 同时打包3个文件</span>
+pr1 build index.html detail.html tools.js --config=<span class="hljs-string">"./config.js"</span> <span class="hljs-comment"># 使用指定配置打包3个文件</span>
+pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打包后也会保持同样结构</span>
+</code></pre>
+<h2>配置说明</h2>
+<pre class="hljs"><code><span class="hljs-comment">// pr1.config.js</span>
+<span class="hljs-keyword">const</span> nodeResolve = <span class="hljs-built_in">require</span>(<span class="hljs-string">'rollup-plugin-node-resolve'</span>)
+<span class="hljs-built_in">require</span>(<span class="hljs-string">'colors'</span>)
+
+<span class="hljs-built_in">module</span>.exports = {
+  <span class="hljs-comment">// vendor 子项的第一个值将会整合到 rollup 的 external</span>
+  <span class="hljs-comment">// [0]是开发环境用的，[1]是生产环境用的，如果没有[1]生产环境也用[0]</span>
+  vendor: [
+    [<span class="hljs-string">'vue/dist/vue.esm.browser.js'</span>, <span class="hljs-string">'vue/dist/vue.min.js'</span>]
+  ],
+  <span class="hljs-comment">// dist 打包后文件输出目录，路径应相对于当前配置文件</span>
+  dist: <span class="hljs-string">''</span>,
+  <span class="hljs-comment">// static 静态文件，路径应相对于 html 入口文件</span>
+  <span class="hljs-keyword">static</span>: [],
+  <span class="hljs-comment">// rollup 选项，必须有</span>
+  rollupConfig: {
+    <span class="hljs-comment">// 定义了 vendor，再定义 globals，这样 rollup 会把相关的 vendor 转换成全局变量作为外部资源处理</span>
+    globals: {
+      <span class="hljs-string">'vue/dist/vue.esm.browser.js'</span>: <span class="hljs-string">'Vue'</span>
+    },
+    <span class="hljs-attr">plugins</span>: [
+      <span class="hljs-comment">// rollup-plugin-node-resolve 用于 rollup 解决引用 node_modules 资源使用</span>
+      <span class="hljs-comment">// 飘刃在开发环境不会运行该模块，打包会自动执行</span>
+      nodeResolve()
+    ]
+  },
+  <span class="hljs-comment">// babel 选项，不提供将不会进行转码，不使用 uglify 压缩时，可安装 babel 的 minify 插件压缩</span>
+  babelConfig: {
+    <span class="hljs-attr">presets</span>: [
+      [
+        <span class="hljs-string">'@babel/env'</span>, {
+          <span class="hljs-attr">modules</span>: <span class="hljs-literal">false</span>,
+          <span class="hljs-attr">targets</span>: {
+            <span class="hljs-attr">ie</span>: <span class="hljs-string">'9'</span>,
+            <span class="hljs-attr">chrome</span>: <span class="hljs-string">'49'</span>
+          }
+        }
+      ]
+    ]
+  },
+  <span class="hljs-comment">// uglify 选项，不提供将不会压缩，如果 babel 转码后仍存在 ES6+ 代码，uglify 解释不了将会压缩失败</span>
+  uglifyConfig: {
+    <span class="hljs-attr">toplevel</span>: <span class="hljs-literal">true</span>
+  },
+  <span class="hljs-comment">// 打包前的钩子</span>
+  beforeBuild: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">originDir</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`开始打包：`</span>.green + <span class="hljs-string">`<span class="hljs-subst">${originDir}</span>`</span>.cyan)
+  },
+  <span class="hljs-comment">// 打包后的钩子</span>
+  afterBuild: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">distDir</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`完成打包：`</span>.green + <span class="hljs-string">`<span class="hljs-subst">${distDir}</span>`</span>.cyan)
+  }
+}
+</code></pre>
+<h2>运作原理</h2>
+<p>飘刃会拦截所有带有 pr1_module=1 参数的 url ，并处理对应的文件资源，目前只会处理 .vue .html .js 3种文件</p>
+<p>把 import/export 转换成 async/await 让浏览器可以支持引入除 js 外的其它资源</p>
+<p>飘刃会把非 js 资源通过 rollup 的插件转换成 js 资源再传到浏览器，开发环境只会调用 rollup 插件的 transform 方法</p>
+<p>import/export 转换关系如下：</p>
+<pre class="hljs"><code><span class="hljs-comment">// import 规则</span>
+<span class="hljs-keyword">import</span> { a, b, c } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>             =&gt; <span class="hljs-keyword">const</span> { a, b, c } = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
+<span class="hljs-keyword">import</span> { abc <span class="hljs-keyword">as</span> a, efg <span class="hljs-keyword">as</span> b } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>  =&gt; <span class="hljs-keyword">const</span> { <span class="hljs-attr">abc</span>: a, <span class="hljs-attr">efg</span>: b } = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
+<span class="hljs-keyword">import</span> a <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>                       =&gt; <span class="hljs-keyword">const</span> { <span class="hljs-attr">default</span>: a } = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
+<span class="hljs-keyword">import</span> <span class="hljs-string">'./util.js'</span>                              =&gt; <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
+<span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> a <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>                  =&gt; <span class="hljs-keyword">const</span> a = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
+</code></pre>
+<pre class="hljs"><code><span class="hljs-comment">// export 规则</span>
+ <span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> a = <span class="hljs-string">'xxx'</span>                           =&gt; exports[<span class="hljs-string">'/xx.js'</span>].a = <span class="hljs-string">'xxx'</span>
+ <span class="hljs-keyword">export</span> { a, b, c }                             =&gt; <span class="hljs-built_in">Object</span>.assign(exports[<span class="hljs-string">'/xx.js'</span>], {a, b, c})
+ <span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span> (<span class="hljs-params"></span>) </span>{}                        =&gt; exports[<span class="hljs-string">'/xx.js'</span>].a = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span> (<span class="hljs-params"></span>) </span>{}
+ <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> a                               =&gt; exports[<span class="hljs-string">'/xx.js'</span>].default = a
+ <span class="hljs-keyword">export</span> { abc <span class="hljs-keyword">as</span> a }                            =&gt; <span class="hljs-built_in">Object</span>.assign(exports[<span class="hljs-string">'/xx.js'</span>], {<span class="hljs-attr">a</span>: abc} = { a })
+ <span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">e</span> </span>{}                              =&gt; exports[<span class="hljs-string">'/xx.js'</span>].e = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">e</span> </span>{}
+</code></pre>
+<h2>静态资源</h2>
+<p>所有在 html 或 css 引入的静态资源，路径都是相对于入口 html 文件，
+如下目录结构</p>
+<pre class="hljs"><code>src/
+  |-- index.html
+  |-- static/
+    |-- images/
+      |-- a.png
+  |-- pages/
+    |-- one/
+      |-- two/
+        |-- three/
+          |-- a.vue <span class="hljs-comment"># background-url: ./static/images/a.png</span>
+    |-- b.html  <span class="hljs-comment"># img src="./static/images/a.png"</span>
+    |-- b.js
+</code></pre>
+<p>如上所示，a.vue 和 b.html 在不同的目录路径上，但是引入相同的 a.png 文件，都是使用相同的相对于 index.html 的路径</p>
+<h2>多页应用</h2>
+<p>飘刃处理多面应用非常简单，如下目录结构</p>
+<pre class="hljs"><code>src/
+  |-- page1/
+    |-- index.html
+  |-- page2/
+    |-- index.html
+  |-- page3/
+    |-- index.html
+</code></pre>
+<p>开发环境，在 src 目录执行 <code>pr1 start</code></p>
+<p>在浏览器分别访问</p>
+<p>http://localhost:8686/page1/</p>
+<p>http://localhost:8686/page2/</p>
+<p>http://localhost:8686/page3/</p>
+<p>生产环境，在 src 目录执行 <code>pr1 build page1/index.html page2/index.html page3/index.html</code></p>
+<p>在 dist 目录会保持以下目录结构</p>
+<pre class="hljs"><code>dist/
+  |-- page1/
+    |-- index.html
+  |-- page2/
+    |-- index.html
+  |-- page3/
+    |-- index.html
+</code></pre>
+<h2>生产注释</h2>
+<p>如下示例：</p>
+<pre class="hljs"><code>doSome(<span class="hljs-function"><span class="hljs-params">data</span> =&gt;</span> {
+  <span class="hljs-comment">// pr1 ignore++</span>
+  <span class="hljs-built_in">console</span>.info(<span class="hljs-string">`调试信息:<span class="hljs-subst">${data}</span>`</span>)
+  <span class="hljs-comment">// pr1 ignore--</span>
+  doIt(data)
+})
+</code></pre>
+<p><code>// pr1 ignore++</code>到<code>// pr1 ignore--</code>的代码在生产环境会被删除</p>
+<pre class="hljs"><code>doSome(<span class="hljs-function"><span class="hljs-params">data</span> =&gt;</span> {
+  doIt(data)
+})
+</code></pre>
+<h2>注意事项</h2>
+<ul>
+<li>
+<p>开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径没有<code>./</code>、<code>../</code>等相对路径，将会从项目根目录的 node_modules 导入</p>
+</li>
+<li>
+<p>如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件用以打包</p>
+</li>
+<li>
+<p>所有静态资源路径都应该相对于入口 html 文件</p>
+</li>
+<li>
+<p>如果要使用 sass 或 scoped，必须保持严格格式，只允许<code>&lt;style lang=&quot;sass&quot; scoped&gt;</code>、<code>&lt;style lang=&quot;sass&quot;&gt;</code>、<code>&lt;style scoped&gt;</code>，不允许<code>&lt;style scoped lang=&quot;sass&quot;&gt;</code>，同理如果要使用 pug ，必须书写成<code>&lt;template lang=&quot;pug&quot;&gt;</code>，不允许多空格或少空格</p>
+</li>
+<li>
+<p>如果同目录存在同名的 html 和 js 文件，则视为 Vue 组件，打包时会自动关联转成 render 函数。同名 js 文件只能用 template: html，不能用其它变量</p>
+<pre class="hljs"><code><span class="hljs-comment">// html/js 的 Vue 组件只能用 html 作为变量名引入同名 html 文件</span>
+<span class="hljs-keyword">import</span> html <span class="hljs-keyword">from</span> <span class="hljs-string">'./sameName.html'</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-attr">template</span>: html
+}
+</code></pre>
+</li>
+</ul>
+<h2>更新日志</h2>
+<p>### v0.0.10 (2019-04-24)</p>
+<ul>
+<li>完成文档，上线</li>
+</ul>
+<h2>攒助作者</h2>
+<p>支持作者继续维护更新，编写更多教程和使用技巧。如果有足够的支持，飘刃将来将会支持 React、TypeScript、热更新、异步模块等等。</p>
+<p><strong>支持方式</strong></p>
+<p>1、购买好货记产品，好货记是作者目前创业的产物，地址：<a target="_blank" href="https://goodgoodsbook.com/">https://goodgoodsbook.com/</a></p>
+<p>2、打赏1块几毛钱，让作者不用去天桥底蹲位</p>
+<img src="https://goodgoodsbook.com/imgs/alipay.jpg" width="300">
+<img src="https://goodgoodsbook.com/imgs/wxpay.png" width="300">
+<div style="clear:both;height:24px;"></div>
+<h2>开源协议</h2>
+<p>MIT</p>
+</div>
+  <iframe id="ad" frameborder="no" marginwidth="0" marginheight="0" scrolling="no" src="//www.chjtx.com/JTaro/ad.html?v=1"></iframe>
+</body>
+</html>
