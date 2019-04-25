@@ -11,8 +11,10 @@ module.exports = {
     ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.min.js'],
     ['jroll/src/jroll.js', 'jroll/build/jroll.min.js']
   ],
+  // 热更新
+  hot: 'reload',
   static: ['./images'],
-  rollupConfig: {           // 打包时用到的 Rollup 配置，input 和 output 的 file 选项是无效的
+  rollupConfig: { // 打包时用到的 Rollup 配置，input 和 output 的 file 选项是无效的
     globals: {
       'vue/dist/vue.esm.browser.js': 'Vue',
       'jroll/src/jroll.js': 'JRoll'
@@ -26,7 +28,7 @@ module.exports = {
       // pug()
       nodeResolve()
       // pr1Plugin()
-    ]    // 配置 Rollup 的插件，飘刃也会用到
+    ] // 配置 Rollup 的插件，飘刃也会用到
   },
   babelConfig: {
     presets: [

@@ -210,6 +210,8 @@ module.exports = {
   vendor: [
     ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.min.js']
   ],
+  // 热更新 style or reload
+  hot: 'style',
   // dist 打包后文件输出目录，路径应相对于当前配置文件
   dist: '',
   // static 静态文件，路径应相对于 html 入口文件
@@ -385,13 +387,17 @@ doSome(data => {
 
 ## 更新日志
 
+\### v0.1.0 (2019-04-25)
+
+- 添加热更新选项，只支持更新 style 或 reload 刷新页面两种方式
+
 \### v0.0.10 (2019-04-24)
 
 - 完成文档，上线
 
 ## 攒助作者
 
-支持作者继续维护更新，编写更多教程和使用技巧。如果有足够的支持，飘刃将来将会支持 React、TypeScript、热更新、异步模块等等。
+支持作者继续维护更新，编写更多教程和使用技巧。如果有足够的支持，飘刃将来将会支持 React、TypeScript、异步模块等等。
 
 __支持方式__
 

@@ -46,6 +46,7 @@ module.exports = function () {
   const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.vue'])
   let css = []
   let count = 0
+  const cacheScope = {}
 
   return {
     name: 'pr1',
@@ -94,17 +95,22 @@ module.exports = function () {
         html = code
       }
 
-      if (html) {
-        count++
-        if (isVue) {
-          [html, script] = releaseVueTemplate(html)
-        }
-      } else {
+      if (!html) {
         return
+      }
+      if (isVue) {
+        [html, script] = releaseVueTemplate(html)
       }
 
       // style作用域
-      const scope = 'x' + count
+      let scope = ''
+      if (cacheScope[pathId]) {
+        scope = cacheScope[pathId]
+      } else {
+        count++
+        scope = 'x' + count
+        cacheScope[pathId] = scope
+      }
       if (isScoped) {
         style = style.replace(/([#a-zA-Z-_.@][^{}]+)\{/g, function (match, selector) {
           if (selector.trim() === 'from' || selector.trim() === 'to' || /^@/.test(selector)) {

@@ -7,6 +7,8 @@ module.exports = {
   vendor: [
     ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.min.js']
   ],
+  // 热更新 style or reload
+  hot: 'style',
   // dist 打包后文件输出目录，路径应相对于当前配置文件
   dist: '',
   // static 静态文件，路径应相对于 html 入口文件

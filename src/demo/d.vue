@@ -2,7 +2,7 @@
 div
   input(v-model="a")
   h3 pug-h3
-    span {{ a }}
+    span {{ a }} 湎顶替
 </template>
 
 <script>
@@ -17,7 +17,7 @@ export default {
 
 
 <style lang="sass" scoped>
-$abc: #008877;
+$abc: #ff00ff;
 h3 {
   color: $abc;
 }

@@ -54,10 +54,10 @@
     // modules
     modules: {},
     // import
-    import (path, parentPath) {
+    import (path, parentPath, noCache) {
       const uniquePath = resolvePath(path, parentPath)
 
-      if (pr1.modules[uniquePath]) {
+      if (pr1.modules[uniquePath] && !noCache) {
         return pr1.modules[uniquePath].exports
       }
       if (!cache[parentPath]) {
@@ -72,10 +72,13 @@
           src: uniquePath,
           depend: 0,
           parent: cache[parentPath],
-          children: []
+          children: [],
+          origin: path
         }
       }
-      cache[parentPath].children.push(cache[uniquePath])
+      if (!noCache) {
+        cache[parentPath].children.push(cache[uniquePath])
+      }
       cache[parentPath].depend++
 
       // 检测是否存在循环引用
@@ -113,11 +116,22 @@
       style.setAttribute('pr1-path', pathId)
       style.innerHTML = css
       document.head.appendChild(style)
-    },
-    // require
-    require () {
-
     }
   }
+
+  // hot
+  if (`{{configHot}}`) {
+    const ws = new win.WebSocket('ws://localhost:{{port}}')
+    ws.onmessage = function (evt) {
+      if (pr1.modules[evt.data]) {
+        if (`{{hot}}` === 'style') {
+          pr1.import(cache[evt.data].origin, cache[evt.data].parent.src, true)
+        } else {
+          win.document.location.reload()
+        }
+      }
+    }
+  }
+
   win.pr1 = pr1
 })(window)

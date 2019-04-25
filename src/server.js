@@ -2,6 +2,7 @@ const http = require('http')
 const path = require('path')
 const { URL } = require('url')
 const fs = require('fs')
+const WebSocket = require('ws')
 const { parsePr1, parseNode } = require('./parse.js')
 
 require('colors')
@@ -27,6 +28,50 @@ const mime = {
   'wmv': 'video/x-ms-wmv',
   'xml': 'text/xml'
 }
+let fileChangeTime = 0
+
+// 监听文件变化
+function watchFiles (dir, ws) {
+  const w = fs.watch(dir, (event, filename) => {
+    const p = path.resolve(dir, filename)
+    if (event === 'rename') {
+      fs.stat(p, (err, state) => {
+        if (!err) {
+          if (state.isDirectory()) {
+            w.close()
+            watchFiles(p, ws)
+          }
+        } else {
+          w.close()
+        }
+      })
+    } else {
+      // event === change
+      fs.stat(p, (err, state) => {
+        const now = Date.now()
+        if (!err && state.isFile() && (now - fileChangeTime > 100)) {
+          fileChangeTime = now
+          if (ws && ws.readyState === 1) {
+            ws.send(p.replace(cwd, '').replace(/\\/g, '/'))
+          }
+        }
+      })
+    }
+  })
+  w.on('error', (e) => {
+    console.error(e)
+  })
+  // 递归监听
+  fs.readdirSync(dir).forEach(f => {
+    const p = path.resolve(dir, f)
+    fs.stat(p, (err, state) => {
+      if (err) throw err
+      if (state.isDirectory()) {
+        watchFiles(p, ws)
+      }
+    })
+  })
+}
 
 // 浏览器端所需文件
 const client = fs.readFileSync(path.resolve(__dirname, './client.js')).toString()
@@ -41,7 +86,9 @@ module.exports = function server (port, config) {
       return
     }
     if (req.url === '/pr1-client.js') {
-      res.end(client)
+      res.end(client.replace('{{port}}', port)
+        .replace('`{{configHot}}`', !!config.hot)
+        .replace('`{{hot}}`', `'${config.hot}'`))
       return
     }
 
@@ -86,7 +133,17 @@ module.exports = function server (port, config) {
       res.end()
     }
   })
+
+  // websocket hot
+  if (config.hot) {
+    const WS = new WebSocket.Server({ server })
+    WS.on('connection', function connection (ws) {
+      watchFiles(cwd, ws)
+    })
+  }
+
   server.listen(port)
+
   console.log(`\nPR1 server run successfully!`.green)
   console.log(`Server run at:` + ` http://localhost:${port}\n`.cyan)
 }
