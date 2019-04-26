@@ -86,25 +86,6 @@
 <pre class="hljs"><code>npm run dev
 </code></pre>
 <ul>
-<li>修改 src/index.html ，添加 `&lt;Layout/&gt; 标签</li>
-</ul>
-<pre class="hljs"><code><span class="hljs-comment">&lt;!-- index.html --&gt;</span>
-<span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">"zh-CN"</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">"UTF-8"</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"viewport"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"width=device-width, initial-scale=1.0"</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>飘刃<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"app"</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">Layout</span>/&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"./main.js?pr1_module=1"</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
-</code></pre>
-<ul>
 <li>修改 src/main.js ，添加 Layout 组件</li>
 </ul>
 <pre class="hljs"><code><span class="hljs-comment">// main.js</span>
@@ -116,7 +97,8 @@
   <span class="hljs-attr">el</span>: <span class="hljs-string">'#app'</span>,
   <span class="hljs-attr">components</span>: {
     Layout
-  }
+  },
+  <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;Layout/&gt;'</span>
 })
 </code></pre>
 <ul>
@@ -389,7 +371,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 </li>
 </ul>
 <h2>更新日志</h2>
-<p>### v0.1.0 (2019-04-25)</p>
+<p>### v0.1.1 (2019-04-26)</p>
 <ul>
 <li>添加热更新选项，只支持更新 style 或 reload 刷新页面两种方式</li>
 </ul>

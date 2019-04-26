@@ -10,6 +10,27 @@ Vue 项目前端工程构建工具，使用 Rollup 打包
 - 够直观，开发环境可在浏览器 Elements 调试板块直接从 dom 属性找到组件对应的文件位置
 - 体积小，生产代码使用 rollup 打包，摇树优化，没用代码全靠边，再上 uglify 高效压缩
 
+## 飘刃 VS Vue-CLI
+
+__对比环境__ 华为荣耀 MagicBook Windows 10 家庭版 i5 8G 64位 联通4G热点
+
+| | 飘刃 | Vue-CLI |
+| :---: | :--- | :--- |
+| 工具版本 | piaoren@0.1.1 | @vue/cli@3.6.3 |
+| 依赖包数 | 487 | 689 |
+| 安装命令 | npm i -g piaoren | npm i -g @vue/cli |
+| 安装时间 | 18s | 1m 42s |
+| 创建项目 | pr1 init 只需要填项目名称 | vue create/vue init 需要填选多项 |
+| 启动命令 | pr1 start | vue serve |
+| 启动时间 | | |
+| 热更响应 | | |
+| 打包工具 | Rollup | Webpack |
+| 打包时间 | | |
+| 打包结果 | | |
+| 多页应用 | | |
+
+总结：
+
 ## 快速上手
 
 ```sh
@@ -33,26 +54,6 @@ pr1 init
 npm run dev
 ```
 
-- 修改 src/index.html ，添加 `&lt;Layout/&gt; 标签
-
-```html
-<!-- index.html -->
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>飘刃</title>
-</head>
-<body>
-  <div id="app">
-    <Layout/>
-  </div>
-  <script src="./main.js?pr1_module=1"></script>
-</body>
-</html>
-```
-
 - 修改 src/main.js ，添加 Layout 组件
 
 ```js
@@ -65,7 +66,8 @@ new Vue({
   el: '#app',
   components: {
     Layout
-  }
+  },
+  template: '<Layout/>'
 })
 ```
 
@@ -387,9 +389,10 @@ doSome(data => {
 
 ## 更新日志
 
-\### v0.1.0 (2019-04-25)
+\### v0.1.1 (2019-04-26)
 
 - 添加热更新选项，只支持更新 style 或 reload 刷新页面两种方式
+- 更新文档，添加和 vue-cli 的对比
 
 \### v0.0.10 (2019-04-24)
 
