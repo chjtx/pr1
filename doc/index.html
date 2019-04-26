@@ -72,6 +72,95 @@
 <li>够直观，开发环境可在浏览器 Elements 调试板块直接从 dom 属性找到组件对应的文件位置</li>
 <li>体积小，生产代码使用 rollup 打包，摇树优化，没用代码全靠边，再上 uglify 高效压缩</li>
 </ul>
+<h2>飘刃 VS Vue-CLI</h2>
+<p><strong>对比环境</strong> 华为荣耀 MagicBook Windows 10 家庭版 i5 8G 64位 联通4G热点 30多个组件的小型 Vue 项目</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:left">飘刃</th>
+<th style="text-align:left">Vue-CLI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">工具版本</td>
+<td style="text-align:left">piaoren@0.1.1</td>
+<td style="text-align:left">@vue/cli@3.6.3</td>
+</tr>
+<tr>
+<td style="text-align:center">依赖包数</td>
+<td style="text-align:left">487</td>
+<td style="text-align:left">689</td>
+</tr>
+<tr>
+<td style="text-align:center">安装命令</td>
+<td style="text-align:left">npm i -g piaoren</td>
+<td style="text-align:left">npm i -g @vue/cli</td>
+</tr>
+<tr>
+<td style="text-align:center">安装时间</td>
+<td style="text-align:left">18s</td>
+<td style="text-align:left">1m 42s</td>
+</tr>
+<tr>
+<td style="text-align:center">支持编码</td>
+<td style="text-align:left">Pug Sass ES6+</td>
+<td style="text-align:left">Pug Sass Less Stylus ES6+ TypeScript</td>
+</tr>
+<tr>
+<td style="text-align:center">创建项目</td>
+<td style="text-align:left">pr1 init 只需要填项目名称</td>
+<td style="text-align:left">vue create/vue init 需要填选多项</td>
+</tr>
+<tr>
+<td style="text-align:center">启动命令</td>
+<td style="text-align:left">pr1 start</td>
+<td style="text-align:left">vue serve</td>
+</tr>
+<tr>
+<td style="text-align:center">启动时间</td>
+<td style="text-align:left">2s 与项目内容多少无关</td>
+<td style="text-align:left">6.8s 项目内容多少决定</td>
+</tr>
+<tr>
+<td style="text-align:center">热更响应</td>
+<td style="text-align:left">支持更新 css 和刷新页面<br>两种方式，不支持 js 更新<br>更新 js 需要刷新页面<br>响应速度 立即</td>
+<td style="text-align:left">支持 css 和 js 更新，vue 组件更新<br>有点鸡肋，很大概率需要手动更新<br>才能看到预期效果，每次变化都需<br>要编译，响应速度 稍慢</td>
+</tr>
+<tr>
+<td style="text-align:center">打包工具</td>
+<td style="text-align:left">Rollup</td>
+<td style="text-align:left">Webpack</td>
+</tr>
+<tr>
+<td style="text-align:center">打包时间</td>
+<td style="text-align:left">5s 项目内容多少决定</td>
+<td style="text-align:left">10s 项目内容多少决定</td>
+</tr>
+<tr>
+<td style="text-align:center">静态资源</td>
+<td style="text-align:left">所有资源路径在任何地方<br>都固定相对于入口文件</td>
+<td style="text-align:left">少于4k的图片会被转为 base64<br>保存在css文件里</td>
+</tr>
+<tr>
+<td style="text-align:center">多页应用</td>
+<td style="text-align:left">无需配置</td>
+<td style="text-align:left">需要配置 pages</td>
+</tr>
+<tr>
+<td style="text-align:center">插件支持</td>
+<td style="text-align:left">Rollup 插件规范</td>
+<td style="text-align:left">Webpack 插件规范</td>
+</tr>
+<tr>
+<td style="text-align:center">单元测试</td>
+<td style="text-align:left">暂不支持</td>
+<td style="text-align:left">可选</td>
+</tr>
+</tbody>
+</table>
+<p>总结：飘刃安装时间、启动速度、响应速度、打包时间都优于 Vue-CLI，但是配置方面不及 Vue-CLI 丰富。中小型无需配置的项目选择飘刃，大中型需要多方面资源配合的项目选择 Vue-CLI。</p>
 <h2>快速上手</h2>
 <pre class="hljs"><code>npm i -g piaoren
 </code></pre>
@@ -374,6 +463,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <p>### v0.1.1 (2019-04-26)</p>
 <ul>
 <li>添加热更新选项，只支持更新 style 或 reload 刷新页面两种方式</li>
+<li>更新文档，添加和 vue-cli 的对比</li>
 </ul>
 <p>### v0.0.10 (2019-04-24)</p>
 <ul>
