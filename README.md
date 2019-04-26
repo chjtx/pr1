@@ -2,6 +2,12 @@
 
 Vue 项目前端工程构建工具，使用 Rollup 打包
 
+## 仓库
+
+【Github】 <a target="_blank" href="https://github.com/chjtx/pr1">https://github.com/chjtx/pr1</a>
+
+【 码 云 】 <a target="_blank" href="https://gitee.com/chenjianlong/pr1">https://gitee.com/chenjianlong/pr1</a>
+
 ## 特点优势
 
 - 源码少，除去第三方工具，飘刃所有核心代码共8个文件不到1000行，看源码不头疼
