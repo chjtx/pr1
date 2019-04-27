@@ -1,11 +1,12 @@
 /* global pr1 */
-import a from './a.js'
+import a, { b } from './a.js'
 import { b as abc, o as omg } from './b.js'
 import Vue from 'vue/dist/vue.esm.browser.js'
 import 'jroll/src/jroll.js'
 import d from './d.vue'
 
 console.log(a)
+console.log(b)
 console.log(abc)
 // console.log(bb)
 // console.log(d)

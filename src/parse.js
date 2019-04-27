@@ -12,58 +12,90 @@ function parseModule (txt, url) {
   return txt
 }
 
+function type1 (variable, filePath, url) {
+  return `const ${variable} = await _import(${filePath}, '${url}')`
+}
+
+function type2 (variable, filePath, url) {
+  const vars = variable.replace(/\{|\}/g, '').split(',').map(v => v.split(/\bas\b/))
+  return `const { ${vars.map(v => v[0].trim() + ': ' + v[1].trim()).join(', ')} } = await _import(${filePath}, '${url}')`
+}
+
+function type3 (variable, filePath, url) {
+  return `const { default: ${variable} } = await _import(${filePath}, '${url}')`
+}
+
+function type5 (variable, filePath, url) {
+  return `const ${variable.split(/\bas\b/)[1].trim()} = await _import(${filePath}, '${url}')`
+}
+
+function type6 (res, def) {
+  return res.replace('const {', `const { default: ${def},`)
+}
+
 /* import 规则
- * 1) import { a, b, c } from './util.js'             => const { a, b, c } = await pr1.import('./util.js')
- * 2) import { abc as a, efg as b } from './util.js'  => const { abc: a, efg: b } = await pr1.import('./util.js')
- * 3) import a from './util.js'                       => const { default: a } = await pr1.import('./util.js')
- * 4) import './util.js'                              => await pr1.import('./util.js')
- * 5) import * as a from './util.js'                  => const a = await pr1.import('./util.js')
- * 以下未实现
- * 6) import a, { b, c } from './util.js'             => const { default: a, b, c } = await pr1.import('./util.js')
+ * 1) import { a, b, c } from './util.js'             => const { a, b, c } = await _import('./util.js')
+ * 2) import { abc as a, efg as b } from './util.js'  => const { abc: a, efg: b } = await _import('./util.js')
+ * 3) import a from './util.js'                       => const { default: a } = await _import('./util.js')
+ * 4) import './util.js'                              => await _import('./util.js')
+ * 5) import * as a from './util.js'                  => const a = await _import('./util.js')
+ * 6) import a, { efg as b, c } from './util.js'      => const { default: a, efg: b, c } = await _import('./util.js')
  */
+function parseImport (i, url) {
+  let result = ''
+  let [variable, filePath] = i.replace(/(\s+)?\bimport\b\s+/, '').split(/\bfrom\b/)
+  if (!filePath) {
+    filePath = variable.trim()
+    // 4)
+    return {
+      expression: i,
+      result: `await _import(${filePath}, '${url}')`
+    }
+  } else {
+    variable = variable.trim()
+    filePath = filePath.trim()
+  }
+
+  const leftIndex = variable.indexOf('{')
+  if (/\bas\b/.test(variable)) {
+    if (variable[0] === '{') {
+      // 2)
+      result = type2(variable, filePath, url)
+    } else if (leftIndex > 0) {
+      // 6
+      const def = variable.slice(0, variable.indexOf(','))
+      result = type6(type2(variable.slice(leftIndex), filePath, url), def)
+    } else {
+      // 5)
+      result = type5(variable, filePath, url)
+    }
+  } else {
+    if (variable[0] === '{') {
+      // 1)
+      result = type1(variable, filePath, url)
+    } else if (leftIndex > 0) {
+      // 6
+      const def = variable.slice(0, variable.indexOf(','))
+      result = type6(type1(variable.slice(leftIndex), filePath, url), def)
+    } else {
+      // 3)
+      result = type3(variable, filePath, url)
+    }
+  }
+
+  return {
+    expression: i,
+    result
+  }
+}
+
 function switchImport (txt, url) {
   const imports = txt.match(/^(\s+)?\bimport\b[^\n\r]+/gm)
   if (!imports) {
     return txt
   }
   const results = imports.map(i => {
-    let result = ''
-    let [variable, filePath] = i.replace(/(\s+)?\bimport\b\s+/, '').split(/\bfrom\b/)
-    if (!filePath) {
-      filePath = variable.trim()
-      // 4)
-      return {
-        expression: i,
-        result: `await _import(${filePath}, '${url}')`
-      }
-    } else {
-      variable = variable.trim()
-      filePath = filePath.trim()
-    }
-
-    if (/\bas\b/.test(variable)) {
-      if (variable[0] === '{') {
-        // 2)
-        const vars = variable.replace(/\{|\}/g, '').split(',').map(v => v.split(/\bas\b/))
-        result = `const { ${vars.map(v => v[0].trim() + ': ' + v[1].trim()).join(', ')} } = await _import(${filePath}, '${url}')`
-      } else {
-        // 5)
-        result = `const ${variable.split(/\bas\b/)[1].trim()} = await _import(${filePath}, '${url}')`
-      }
-    } else {
-      if (variable[0] === '{') {
-        // 1)
-        result = `const ${variable} = await _import(${filePath}, '${url}')`
-      } else {
-        // 3)
-        result = `const { default: ${variable} } = await _import(${filePath}, '${url}')`
-      }
-    }
-
-    return {
-      expression: i,
-      result
-    }
+    return parseImport(i, url)
   })
   results.forEach(r => {
     txt = txt.replace(r.expression, r.result)
@@ -79,7 +111,7 @@ function switchImport (txt, url) {
 * 5) export { abc as a }                      => Object.assign(pr1.modules['/xx.js'], {a: abc} = { a })
 * 6) export class e {}                        => pr1.modules['/xx.js'].e = class e {}
 * 以下未实现
-* 7) export { default as d } from './util.js' => Object.assign(pr1.modules['/xx.js'], {default: d} = await _import('./util.js'))
+* 7) export { default as d } from './util.js' => Object.assign(pr1.modules['/xx.js'], ({default: d} = await _import('./util.js')))
 */
 function switchExport (txt, url) {
   const exportx = txt.match(/^(\s+)?\bexport\b[^\n\r]+/gm)
@@ -91,6 +123,15 @@ function switchExport (txt, url) {
     let variable = i.replace(/(\s+)?\bexport\b\s+/, '')
 
     variable = variable.trim()
+
+    // 带 from
+    if (/\bfrom\b/.test(variable)) {
+      const rs = parseImport(variable, url)
+      return {
+        expression: i,
+        result: `Object.assign(exports, async ()=>{return ${rs.result}})`
+      }
+    }
 
     const reg1 = /^(var|let|const)\s+/
     if (reg1.test(variable)) {

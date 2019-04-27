@@ -285,6 +285,7 @@ import { abc as a, efg as b } from './util.js'  => const { abc: a, efg: b } = aw
 import a from './util.js'                       => const { default: a } = await _import('./util.js')
 import './util.js'                              => await _import('./util.js')
 import * as a from './util.js'                  => const a = await _import('./util.js')
+import a, { efg as b, c } from './util.js'      => const { default: a, efg: b, c } = await _import('./util.js')
 ```
 
 ```js
@@ -295,6 +296,7 @@ import * as a from './util.js'                  => const a = await _import('./ut
  export default a                               => exports['/xx.js'].default = a
  export { abc as a }                            => Object.assign(exports['/xx.js'], {a: abc} = { a })
  export class e {}                              => exports['/xx.js'].e = class e {}
+ export { default as d } from './util.js' => Object.assign(pr1.modules['/xx.js'], {default: d} = await _import('./util.js'))
 ```
 
 ## 静态资源
@@ -397,6 +399,11 @@ doSome(data => {
 
 
 ## 更新日志
+
+\### v0.1.2 (2019-04-xx)
+
+- 支持 import a, { b, c } ... 和 export { a } from ... 语法
+- 支持少于4k的图片压缩成base64
 
 \### v0.1.1 (2019-04-26)
 
