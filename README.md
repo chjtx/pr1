@@ -296,7 +296,7 @@ import a, { efg as b, c } from './util.js'      => const { default: a, efg: b, c
  export default a                               => exports['/xx.js'].default = a
  export { abc as a }                            => Object.assign(exports['/xx.js'], {a: abc} = { a })
  export class e {}                              => exports['/xx.js'].e = class e {}
- export { default as d } from './util.js' => Object.assign(pr1.modules['/xx.js'], {default: d} = await _import('./util.js'))
+ export { default as d } from './util.js'       => Object.assign(exports, await _import('./util.js'))
 ```
 
 ## 静态资源

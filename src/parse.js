@@ -90,7 +90,7 @@ function parseImport (i, url) {
 }
 
 function switchImport (txt, url) {
-  const imports = txt.match(/^(\s+)?\bimport\b[^\n\r]+/gm)
+  const imports = txt.match(/^( +)?\bimport\b[^\n\r]+/gm)
   if (!imports) {
     return txt
   }
@@ -98,23 +98,22 @@ function switchImport (txt, url) {
     return parseImport(i, url)
   })
   results.forEach(r => {
-    txt = txt.replace(r.expression, r.result)
+    txt = txt.replace(r.expression, `/* ${r.expression} */` + r.result)
   })
   return txt
 }
 
 /* export 规则
-* 1) export var a = 'xxx'                     => pr1.modules['/xx.js'].a = 'xxx'
-* 2) export { a, b, c }                       => Object.assign(pr1.modules['/xx.js'], {a, b, c})
-* 3) export function a () {}                  => pr1.modules['/xx.js'].a = function a () {}
-* 4) export default a                         => pr1.modules['/xx.js'].default = a
-* 5) export { abc as a }                      => Object.assign(pr1.modules['/xx.js'], {a: abc} = { a })
-* 6) export class e {}                        => pr1.modules['/xx.js'].e = class e {}
-* 以下未实现
-* 7) export { default as d } from './util.js' => Object.assign(pr1.modules['/xx.js'], ({default: d} = await _import('./util.js')))
+* 1) export var a = 'xxx'                     => exports.a = 'xxx'
+* 2) export { a, b, c }                       => Object.assign(exports, {a, b, c})
+* 3) export function a () {}                  => exports.a = function a () {}
+* 4) export default a                         => exports.default = a
+* 5) export { abc as a }                      => Object.assign(exports, {a: abc} = { a })
+* 6) export class e {}                        => exports.e = class e {}
+* 7) export { default as d } from './util.js' => Object.assign(exports, await _import('./util.js'))
 */
 function switchExport (txt, url) {
-  const exportx = txt.match(/^(\s+)?\bexport\b[^\n\r]+/gm)
+  const exportx = txt.match(/^( +)?\bexport\b[^\n\r]+/gm)
   if (!exportx) {
     return txt
   }
@@ -129,7 +128,7 @@ function switchExport (txt, url) {
       const rs = parseImport(variable, url)
       return {
         expression: i,
-        result: `Object.assign(exports, async ()=>{return ${rs.result}})`
+        result: `Object.assign(exports, ${rs.result.slice(rs.result.indexOf(' await '))})`
       }
     }
 
@@ -160,9 +159,8 @@ function switchExport (txt, url) {
       result
     }
   })
-  // results[0].result = `pr1.modules['${url}']={};` + results[0].result
   results.forEach(r => {
-    txt = txt.replace(r.expression, r.result)
+    txt = txt.replace(r.expression, `/* ${r.expression} */` + r.result)
   })
   return txt
 }
