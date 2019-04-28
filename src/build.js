@@ -73,12 +73,12 @@ function addSrcHash (txt, distDir) {
   return html
 }
 
-async function compileHTML (config, originIndexPath, distIndexPath) {
+async function compileHTML (config, originIndexPath, targetIndexPath) {
   const originDir = path.dirname(originIndexPath)
 
   // 拷贝入口文件
-  const distDir = path.dirname(distIndexPath)
-  fs.copySync(originIndexPath, distIndexPath)
+  const distDir = path.dirname(targetIndexPath)
+  fs.copySync(originIndexPath, targetIndexPath)
 
   // 拷贝第三方工具
   const vendors = []
@@ -107,7 +107,7 @@ async function compileHTML (config, originIndexPath, distIndexPath) {
   const out = path.resolve(distDir, main)
   const code = await bundle(input, out, config)
 
-  let indexHtml = fs.readFileSync(distIndexPath).toString()
+  let indexHtml = fs.readFileSync(targetIndexPath).toString()
 
   // 如果存在 bable 的 regeneratorRuntime，自动加入 profill
   if (/\bregeneratorRuntime\b/.test(code)) {
@@ -133,26 +133,29 @@ async function compileHTML (config, originIndexPath, distIndexPath) {
   // 将index.html里的所有内部路径加上hash
   indexHtml = addSrcHash(indexHtml, distDir)
 
-  fs.writeFileSync(distIndexPath, indexHtml)
+  fs.writeFileSync(targetIndexPath, indexHtml)
 }
 
 async function compile (entry, config, dist) {
   const originIndexPath = path.resolve(cwd, entry)
-  const distIndexPath = path.resolve(dist, entry)
+  const targetIndexPath = path.resolve(dist, entry)
+
+  process.env.PR1_CONFIG.originIndexPath = originIndexPath
+  process.env.PR1_CONFIG.targetIndexPath = targetIndexPath
 
   if (config.beforeBuild) {
     await config.beforeBuild(originIndexPath)
   }
 
   if (/\.js$/.test(entry)) {
-    await bundle(originIndexPath, distIndexPath, config, `pr1.modules.${path.basename(entry).replace(/\./g, '_')}`)
+    await bundle(originIndexPath, targetIndexPath, config, `pr1.modules.${path.basename(entry).replace(/\./g, '_')}`)
   } else {
-    await compileHTML(config, originIndexPath, distIndexPath)
+    await compileHTML(config, originIndexPath, targetIndexPath)
   }
 
   // 执行打包完的回调
   if (config.afterBuild) {
-    await config.afterBuild(distIndexPath)
+    await config.afterBuild(targetIndexPath)
   }
 }
 

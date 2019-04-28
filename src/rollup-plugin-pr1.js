@@ -45,6 +45,7 @@ function releaseVueTemplate (html) {
 module.exports = function () {
   const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.vue'])
   let css = []
+  let htmls = []
   let count = 0
   const cacheScope = {}
 
@@ -101,6 +102,7 @@ module.exports = function () {
       if (isVue) {
         [html, script] = releaseVueTemplate(html)
       }
+      htmls.push(html)
 
       // style作用域
       let scope = ''
@@ -163,10 +165,18 @@ module.exports = function () {
     generateBundle (outputOptions) {
       const cssPath = outputOptions.file.replace(/\.js$/, '.css')
       if (css.length) {
+        // 查找 css 里的静态图片
+
+        // 打包 css 文件
         const output = new CleanCSS().minify(css.join('\n'))
         fs.ensureDirSync(path.dirname(cssPath))
         fs.writeFileSync(cssPath, output.styles)
         css = []
+      }
+      if (htmls.length) {
+        // 查找 html 里的静态图片
+
+        htmls = []
       }
     }
   }
