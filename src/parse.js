@@ -112,52 +112,56 @@ function switchImport (txt, url) {
 * 6) export class e {}                        => exports.e = class e {}
 * 7) export { default as d } from './util.js' => Object.assign(exports, await _import('./util.js'))
 */
+function parseExport (i, url) {
+  let result = ''
+  let variable = i.replace(/(\s+)?\bexport\b\s+/, '')
+
+  variable = variable.trim()
+
+  // 带 from
+  if (/\bfrom\b/.test(variable)) {
+    const rs = parseImport(variable, url)
+    return {
+      expression: i,
+      result: `Object.assign(exports, ${rs.result.slice(rs.result.indexOf(' await '))})`
+    }
+  }
+
+  const reg1 = /^(var|let|const)\s+/
+  if (reg1.test(variable)) {
+    result = `exports.${variable.replace(reg1, '')}`
+  }
+  // 4)
+  const reg2 = /^default\s+/
+  if (reg2.test(variable)) {
+    result = `exports.default = ${variable.replace(reg2, '')}`
+  }
+  // 3) 6)
+  const reg3 = /^(function|class)\s+/
+  if (reg3.test(variable)) {
+    result = `exports.${variable.replace(reg3, '').split(' ')[0]} = ${variable}`
+  }
+  // 2) 5)
+  if (variable[0] === '{') {
+    if (/\bas\b/.test(variable)) {
+      const vars = variable.replace(/\{|\}/g, '').split(',').map(v => v.split(/\bas\b/))
+      variable = vars.map(v => v[0].trim() + ': ' + v[1].trim()).join(', ')
+    }
+    result = `Object.assign(exports, ${variable})`
+  }
+  return {
+    expression: i,
+    result
+  }
+}
+
 function switchExport (txt, url) {
   const exportx = txt.match(/^( +)?\bexport\b[^\n\r]+/gm)
   if (!exportx) {
     return txt
   }
   const results = exportx.map(i => {
-    let result = ''
-    let variable = i.replace(/(\s+)?\bexport\b\s+/, '')
-
-    variable = variable.trim()
-
-    // 带 from
-    if (/\bfrom\b/.test(variable)) {
-      const rs = parseImport(variable, url)
-      return {
-        expression: i,
-        result: `Object.assign(exports, ${rs.result.slice(rs.result.indexOf(' await '))})`
-      }
-    }
-
-    const reg1 = /^(var|let|const)\s+/
-    if (reg1.test(variable)) {
-      result = `exports.${variable.replace(reg1, '')}`
-    }
-    // 4)
-    const reg2 = /^default\s+/
-    if (reg2.test(variable)) {
-      result = `exports.default = ${variable.replace(reg2, '')}`
-    }
-    // 3) 6)
-    const reg3 = /^(function|class)\s+/
-    if (reg3.test(variable)) {
-      result = `exports.${variable.replace(reg3, '').split(' ')[0]} = ${variable}`
-    }
-    // 2) 5)
-    if (variable[0] === '{') {
-      if (/\bas\b/.test(variable)) {
-        const vars = variable.replace(/\{|\}/g, '').split(',').map(v => v.split(/\bas\b/))
-        variable = vars.map(v => v[0].trim() + ': ' + v[1].trim()).join(', ')
-      }
-      result = `Object.assign(exports, ${variable})`
-    }
-    return {
-      expression: i,
-      result
-    }
+    return parseExport(i, url)
   })
   results.forEach(r => {
     txt = txt.replace(r.expression, `/* ${r.expression} */` + r.result)
