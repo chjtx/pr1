@@ -11,6 +11,7 @@ module.exports = {
     ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.min.js'],
     ['jroll/src/jroll.js', 'jroll/build/jroll.min.js']
   ],
+  html2VueRender: true,
   // 热更新
   hot: 'reload',
   static: ['./images'],

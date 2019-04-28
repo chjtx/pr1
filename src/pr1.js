@@ -40,6 +40,8 @@ if (configPath) {
   }
 }
 
+process.env.PR1_CONFIG = config
+
 if (isBuild) {
   process.env.NODE_ENV = 'production'
   build(entry, config, configAbsolutePath)

@@ -62,7 +62,7 @@ module.exports = function () {
           // 删除 pr1 ignore
           code = code.replace(/\/\/ pr1 ignore\+\+([\s\S]+)?\/\/ pr1 ignore--/g, '')
           // 转为render函数
-          if (fs.existsSync(id.replace(/\.js$/, '.html'))) {
+          if (process.env.PR1_CONFIG.html2VueRender && fs.existsSync(id.replace(/\.js$/, '.html'))) {
             code = code.replace(/template: html/, 'render: html.render,\nstaticRenderFns: html.staticRenderFns')
           }
         }
@@ -143,7 +143,7 @@ module.exports = function () {
         // 缓存css
         css.push(style)
         // html转成render函数
-        if ((fs.existsSync(id.replace(/\.html$/, '.js'))) || isVue) {
+        if ((process.env.PR1_CONFIG.html2VueRender && fs.existsSync(id.replace(/\.html$/, '.js'))) || isVue) {
           const compiled = compileTemplate({
             source: html,
             filename: '',

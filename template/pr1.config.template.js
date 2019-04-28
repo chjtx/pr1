@@ -7,6 +7,9 @@ module.exports = {
   vendor: [
     ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.min.js']
   ],
+  // true 表示存在同级目录且同名的 html 和 js 文件会被关联到一起
+  // 转成 Vue render 组件提高性能，仅生产环境起作用
+  html2VueRender: true,
   // 热更新 style or reload
   hot: 'style',
   // dist 打包后文件输出目录，路径应相对于当前配置文件

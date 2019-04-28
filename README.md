@@ -397,6 +397,14 @@ doSome(data => {
   }
   ```
 
+## 常见错误
+
+- 运行 `pr1 build` 出错
+
+  >`(node:20976) UnhandledPromiseRejectionWarning: Error: EBUSY: resource busy or locked, rmdir 'D:\xx\dist'`
+
+  dist 目录繁忙或锁定，无法删除。解决方案：检查 dist/index.html 是否在浏览器中打开，将其关闭即可
+
 
 ## 更新日志
 
@@ -404,6 +412,8 @@ doSome(data => {
 
 - 支持 import a, { b, c } ... 和 export { a } from ... 语法
 - 支持少于4k的图片压缩成base64
+- html 和 css 里的图片资源自动拷贝到相应的静态文件夹
+- 添加 html2VueRender 选项，默认开启，即 html 和 js 同级目录且同名 html 会转成 Vue render 函数
 
 \### v0.1.1 (2019-04-26)
 
