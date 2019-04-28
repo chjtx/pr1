@@ -383,6 +383,7 @@ doSome(data => {
 ## 注意事项
 
 - 开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径没有`./`、`../`等相对路径，将会从项目根目录的 node_modules 导入
+- 所有 import 引入的路径都必须带后缀，省略会出错
 - 如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件用以打包
 - 所有静态资源路径都应该相对于入口 html 文件
 - 如果要使用 sass 或 scoped，必须保持严格格式，只允许`<style lang="sass" scoped>`、`<style lang="sass">`、`<style scoped>`，不允许`<style scoped lang="sass">`，同理如果要使用 pug ，必须书写成`<template lang="pug">`，不允许多空格或少空格
