@@ -103,6 +103,10 @@ function switchImport (txt, url) {
   return txt
 }
 
+function removeUnnecessary (rs) {
+  return rs.slice(rs.indexOf('{'), rs.indexOf('}') + 1).replace(/( )?[^:{]+:/g, '')
+}
+
 /* export 规则
 * 1) export var a = 'xxx'                     => exports.a = 'xxx'
 * 2) export { a, b, c }                       => Object.assign(exports, {a, b, c})
@@ -110,7 +114,7 @@ function switchImport (txt, url) {
 * 4) export default a                         => exports.default = a
 * 5) export { abc as a }                      => Object.assign(exports, {a: abc} = { a })
 * 6) export class e {}                        => exports.e = class e {}
-* 7) export { default as d } from './util.js' => Object.assign(exports, await _import('./util.js'))
+* 7) export { default as d } from './util.js' => Object.assign(exports, await (async () => { const { default: d } await _import('./util.js'); return { d }})())
 */
 function parseExport (i, url) {
   let result = ''
@@ -118,15 +122,15 @@ function parseExport (i, url) {
 
   variable = variable.trim()
 
-  // 带 from
+  // 7)
   if (/\bfrom\b/.test(variable)) {
     const rs = parseImport(variable, url)
     return {
       expression: i,
-      result: `Object.assign(exports, ${rs.result.slice(rs.result.indexOf(' await '))})`
+      result: `Object.assign(exports, await (async () => {${rs.result}; return ${removeUnnecessary(rs.result)}})())`
     }
   }
-
+  // 1)
   const reg1 = /^(var|let|const)\s+/
   if (reg1.test(variable)) {
     result = `exports.${variable.replace(reg1, '')}`
