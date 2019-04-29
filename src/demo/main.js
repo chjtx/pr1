@@ -41,6 +41,12 @@ console.log(view1.getInt8(0))
 new Vue({
   el: '#app',
   components: {
-    'my-vue-component': d
-  }
+    'my-vue-component': d,
+    'my-a': a
+  },
+  template: `
+<div>
+  <my-vue-component />
+  <my-a />
+</div>`
 })

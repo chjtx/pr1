@@ -42,6 +42,57 @@ function releaseVueTemplate (html) {
   return [template, script]
 }
 
+function findStatic (assets, type) {
+  let content = assets
+  let matches = []
+  let urls = []
+  if (type === 'url') {
+    content = content.replace(/\/\*([\s\S]+)?\*\//g, '')
+    matches = content.match(/url([^)]+)/g)
+    urls = matches.map(i => {
+      return i.replace(/^url\(("|')?/, '').replace(/("|')?\)$/, '')
+    })
+  } else {
+    content = content.replace(/<!--([\s\S]+)?-->/g, '')
+    // src="abc def/g.img"
+    matches = content.match(/src=("|')([^"']+)\1/g) || []
+    // src=g.img 没引号
+    matches = matches.concat(content.match(/src=([^"' ]+)/g) || [])
+    urls = matches.map(i => {
+      return i.replace(/^src=("|')?/, '').replace(/("|')$/, '')
+    })
+  }
+  const replaceArray = resolveStatic(urls.filter(i => i.indexOf('.') === 0))
+  replaceArray.forEach(i => {
+    content = content.replace(i[0], i[1])
+  })
+  return content
+}
+
+function resolveStatic (urls) {
+  const replaceArray = []
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i].split('?')[0]
+    let originPath = path.resolve(path.dirname(process.env.PR1_CONFIG_ORIGIN_INDEX), url)
+    if (fs.existsSync(originPath)) {
+      const ext = path.extname(url)
+      const targetPath = path.resolve(path.dirname(process.env.PR1_CONFIG_TARGET_INDEX), url)
+      if (/\.(png|jpg|jpeg|gif)/.test(ext)) {
+        if (fs.lstatSync(originPath).size < 4096) {
+          const image = fs.readFileSync(originPath).toString('base64')
+          let data = `data:image/${ext.slice(1)};base64,${image}`
+          replaceArray.push([urls[i], data])
+        } else {
+          fs.copySync(originPath, targetPath)
+        }
+      } else {
+        fs.copySync(originPath, targetPath)
+      }
+    }
+  }
+  return replaceArray
+}
+
 module.exports = function () {
   const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.vue'])
   let css = []
@@ -63,7 +114,7 @@ module.exports = function () {
           // 删除 pr1 ignore
           code = code.replace(/\/\/ pr1 ignore\+\+([\s\S]+)?\/\/ pr1 ignore--/g, '')
           // 转为render函数
-          if (process.env.PR1_CONFIG.html2VueRender && fs.existsSync(id.replace(/\.js$/, '.html'))) {
+          if (process.env.PR1_CONFIG_HTML_2_VUE_RENDER && fs.existsSync(id.replace(/\.js$/, '.html'))) {
             code = code.replace(/template: html/, 'render: html.render,\nstaticRenderFns: html.staticRenderFns')
           }
         }
@@ -86,7 +137,8 @@ module.exports = function () {
         if (regResult[1]) {
           // sass
           style = sass.renderSync({
-            data: style
+            data: style,
+            includePaths: [path.dirname(id)]
           }).css.toString()
         }
         if (regResult[2]) {
@@ -144,8 +196,9 @@ module.exports = function () {
         // 生产环境
         // 缓存css
         css.push(style)
+        html = findStatic(html, 'src')
         // html转成render函数
-        if ((process.env.PR1_CONFIG.html2VueRender && fs.existsSync(id.replace(/\.html$/, '.js'))) || isVue) {
+        if ((process.env.PR1_CONFIG_HTML_2_VUE_RENDER && fs.existsSync(id.replace(/\.html$/, '.js'))) || isVue) {
           const compiled = compileTemplate({
             source: html,
             filename: '',
@@ -162,22 +215,24 @@ module.exports = function () {
         return `export default ${JSON.stringify(html)}`
       }
     },
-    generateBundle (outputOptions) {
+    generateBundle: async function (outputOptions) {
       const cssPath = outputOptions.file.replace(/\.js$/, '.css')
       if (css.length) {
-        // 查找 css 里的静态图片
+        // 查找 css 里的静态资源
+        const cssText = findStatic(css.join('\n'), 'url')
 
         // 打包 css 文件
-        const output = new CleanCSS().minify(css.join('\n'))
+        const output = new CleanCSS().minify(cssText)
         fs.ensureDirSync(path.dirname(cssPath))
         fs.writeFileSync(cssPath, output.styles)
         css = []
       }
-      if (htmls.length) {
-        // 查找 html 里的静态图片
+      // if (htmls.length) {
+      //   // 查找 html 里的静态资源
+      //   await findStatic(htmls, 'src')
 
-        htmls = []
-      }
+      //   htmls = []
+      // }
     }
   }
 }

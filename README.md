@@ -1,6 +1,6 @@
 # 飘刃 (Piao Ren)
 
-Vue 项目前端工程构建工具，使用 Rollup 打包
+约定大于配置的极速 Web 应用打包工具，支持 .vue 文件，生产使用 Rollup 打包
 
 ## 仓库
 
@@ -221,6 +221,9 @@ module.exports = {
   vendor: [
     ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.min.js']
   ],
+  // true 表示存在同级目录且同名的 html 和 js 文件会被关联到一起
+  // 转成 Vue render 组件提高性能，仅生产环境起作用
+  html2VueRender: true,
   // 热更新 style or reload
   hot: 'style',
   // dist 打包后文件输出目录，路径应相对于当前配置文件
@@ -382,10 +385,11 @@ doSome(data => {
 
 ## 注意事项
 
-- 开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径没有`./`、`../`等相对路径，将会从项目根目录的 node_modules 导入
-- 所有 import 引入的路径都必须带后缀，省略会出错
+- 开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径不是以`.`开关，将会从项目根目录的 node_modules 导入
+- 所有 js 文件的 import 引入的路径都必须带后缀，省略会出错
 - 如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件用以打包
-- 所有静态资源路径都应该相对于入口 html 文件
+- 所有静态资源路径都应该相对于入口 html 文件，除了 sass
+- sass 的 `@import` 导入是相对于当前 sass 所在文件的
 - 如果要使用 sass 或 scoped，必须保持严格格式，只允许`<style lang="sass" scoped>`、`<style lang="sass">`、`<style scoped>`，不允许`<style scoped lang="sass">`，同理如果要使用 pug ，必须书写成`<template lang="pug">`，不允许多空格或少空格
 - 如果同目录存在同名的 html 和 js 文件，则视为 Vue 组件，打包时会自动关联转成 render 函数。同名 js 文件只能用 template: html，不能用其它变量
 
@@ -397,6 +401,11 @@ doSome(data => {
     template: html
   }
   ```
+- 在 html 里的 `<img src="./..">` 和 css 里的 `background:url(./..)` 以 `.` 开头的资源会自动解决，小于 4k 的图片会自动转为 base64，无法自动解决的静态资源需要手动在 static 选项添加资源目录名或具体资源文件名，如下示例的资源不能自动处理
+
+  ```html
+  <img v-for="i in images" :src="i.src">
+  ```
 
 ## 常见错误
 
@@ -404,21 +413,22 @@ doSome(data => {
 
   >`(node:20976) UnhandledPromiseRejectionWarning: Error: EBUSY: resource busy or locked, rmdir 'D:\xx\dist'`
 
-  dist 目录繁忙或锁定，无法删除。解决方案：检查 dist/index.html 是否在浏览器中打开，将其关闭即可
+  dist 目录繁忙或锁定，无法删除。解决方案：检查 dist/index.html 是否在浏览器中打开，将其关闭再重新打包
 
 
 ## 更新日志
 
-\### v0.2.0 (2019-04-xx)
+\### v0.2.0 (2019-04-29)
 
-- 支持 import a, { b, c } ... 和 export { a } from ... 语法
-- 支持少于4k的图片压缩成base64
-- html 和 css 里的图片资源自动拷贝到相应的静态文件夹
+- 添加支持 `import a, { b, c } ...` 和 `export { a } from ...` 语法
+- 添加支持少于4k的图片压缩成base64
+- 添加 html 和 css 里的图片资源自动拷贝到相应的静态文件夹的功能
 - 添加 html2VueRender 选项，默认开启，即 html 和 js 同级目录且同名 html 会转成 Vue render 函数
+- 解决 sass 使用 `@import` 导入路径问题
 
 \### v0.1.1 (2019-04-26)
 
-- 添加热更新选项，只支持更新 style 或 reload 刷新页面两种方式
+- 添加热更新 hot 选项，只支持更新 style 或 reload 刷新页面两种方式
 - 更新文档，添加和 vue-cli 的对比
 
 \### v0.0.10 (2019-04-24)

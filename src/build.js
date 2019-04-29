@@ -140,8 +140,8 @@ async function compile (entry, config, dist) {
   const originIndexPath = path.resolve(cwd, entry)
   const targetIndexPath = path.resolve(dist, entry)
 
-  process.env.PR1_CONFIG.originIndexPath = originIndexPath
-  process.env.PR1_CONFIG.targetIndexPath = targetIndexPath
+  process.env.PR1_CONFIG_ORIGIN_INDEX = originIndexPath
+  process.env.PR1_CONFIG_TARGET_INDEX = targetIndexPath
 
   if (config.beforeBuild) {
     await config.beforeBuild(originIndexPath)

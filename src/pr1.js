@@ -40,7 +40,7 @@ if (configPath) {
   }
 }
 
-process.env.PR1_CONFIG = config
+process.env.PR1_CONFIG_HTML_2_VUE_RENDER = config.html2VueRender
 
 if (isBuild) {
   process.env.NODE_ENV = 'production'
