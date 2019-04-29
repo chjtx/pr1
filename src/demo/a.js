@@ -11,7 +11,7 @@ console.log(html)
 
 document.getElementById('app2').innerHTML = a1
 
-export { b } from './b.js'
+export { b as bb } from './b.js'
 export default {
   template: html
 }
