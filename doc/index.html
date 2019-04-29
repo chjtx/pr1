@@ -69,13 +69,13 @@
 <body>
   <!-- <a target="_blank" href="https://github.com/chjtx/pr1"><img style="position: fixed; top: 0; right: 0; border: 0; z-index: 9" src="http://www.chjtx.com/assets/images/jtaro-github-ribbon.png"></a> -->
   <div class="content"><h1>飘刃 (Piao Ren)</h1>
-<p>Vue 项目前端工程构建工具，使用 Rollup 打包</p>
+<p>约定大于配置的极速 Web 应用打包工具，支持 .vue 文件，生产使用 Rollup 打包</p>
 <h2>仓库</h2>
 <p>【Github】 <a target="_blank" href="https://github.com/chjtx/pr1">https://github.com/chjtx/pr1</a></p>
 <p>【 码 云 】 <a target="_blank" href="https://gitee.com/chenjianlong/pr1">https://gitee.com/chenjianlong/pr1</a></p>
 <h2>特点优势</h2>
 <ul>
-<li>源码少，除去第三方工具，飘刃所有核心代码共8个文件不到1000行，看源码不头疼</li>
+<li>源码少，除去第三方工具，飘刃所有核心代码共8个文件1000余行，看源码不头疼</li>
 <li>速度快，开发过程中无需 babel 转译，飘刃只转 import/export ，其余直接输出到浏览器</li>
 <li>效率高，使用谷歌浏览器 99.9% 源码调试，无需 source map ，告别组件 this 乱指 window</li>
 <li>够直观，开发环境可在浏览器 Elements 调试板块直接从 dom 属性找到组件对应的文件位置</li>
@@ -321,6 +321,9 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
   vendor: [
     [<span class="hljs-string">'vue/dist/vue.esm.browser.js'</span>, <span class="hljs-string">'vue/dist/vue.min.js'</span>]
   ],
+  <span class="hljs-comment">// true 表示存在同级目录且同名的 html 和 js 文件会被关联到一起</span>
+  <span class="hljs-comment">// 转成 Vue render 组件提高性能，仅生产环境起作用</span>
+  html2VueRender: <span class="hljs-literal">true</span>,
   <span class="hljs-comment">// 热更新 style or reload</span>
   hot: <span class="hljs-string">'style'</span>,
   <span class="hljs-comment">// dist 打包后文件输出目录，路径应相对于当前配置文件</span>
@@ -378,6 +381,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <span class="hljs-keyword">import</span> a <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>                       =&gt; <span class="hljs-keyword">const</span> { <span class="hljs-attr">default</span>: a } = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
 <span class="hljs-keyword">import</span> <span class="hljs-string">'./util.js'</span>                              =&gt; <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
 <span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> a <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>                  =&gt; <span class="hljs-keyword">const</span> a = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
+<span class="hljs-keyword">import</span> a, { efg <span class="hljs-keyword">as</span> b, c } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>      =&gt; <span class="hljs-keyword">const</span> { <span class="hljs-attr">default</span>: a, <span class="hljs-attr">efg</span>: b, c } = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
 </code></pre>
 <pre class="hljs"><code><span class="hljs-comment">// export 规则</span>
  <span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> a = <span class="hljs-string">'xxx'</span>                           =&gt; exports[<span class="hljs-string">'/xx.js'</span>].a = <span class="hljs-string">'xxx'</span>
@@ -386,6 +390,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
  <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> a                               =&gt; exports[<span class="hljs-string">'/xx.js'</span>].default = a
  <span class="hljs-keyword">export</span> { abc <span class="hljs-keyword">as</span> a }                            =&gt; <span class="hljs-built_in">Object</span>.assign(exports[<span class="hljs-string">'/xx.js'</span>], {<span class="hljs-attr">a</span>: abc} = { a })
  <span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">e</span> </span>{}                              =&gt; exports[<span class="hljs-string">'/xx.js'</span>].e = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">e</span> </span>{}
+ <span class="hljs-keyword">export</span> { <span class="hljs-keyword">default</span> <span class="hljs-keyword">as</span> d } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>       =&gt; <span class="hljs-built_in">Object</span>.assign(exports, <span class="hljs-keyword">await</span> (<span class="hljs-keyword">async</span> () =&gt; { <span class="hljs-keyword">const</span> { <span class="hljs-attr">default</span>: d } <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>); <span class="hljs-keyword">return</span> { d }})()
 </code></pre>
 <h2>静态资源</h2>
 <p>所有在 html 或 css 引入的静态资源，路径都是相对于入口 html 文件，
@@ -446,13 +451,19 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <h2>注意事项</h2>
 <ul>
 <li>
-<p>开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径没有<code>./</code>、<code>../</code>等相对路径，将会从项目根目录的 node_modules 导入</p>
+<p>开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径不是以<code>.</code>开关，将会从项目根目录的 node_modules 导入</p>
+</li>
+<li>
+<p>所有 js 文件的 import 引入的路径都必须带后缀，省略会出错</p>
 </li>
 <li>
 <p>如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件用以打包</p>
 </li>
 <li>
-<p>所有静态资源路径都应该相对于入口 html 文件</p>
+<p>所有静态资源路径都应该相对于入口 html 文件，除了 sass</p>
+</li>
+<li>
+<p>sass 的 <code>@import</code> 导入是相对于当前 sass 所在文件的</p>
 </li>
 <li>
 <p>如果要使用 sass 或 scoped，必须保持严格格式，只允许<code>&lt;style lang=&quot;sass&quot; scoped&gt;</code>、<code>&lt;style lang=&quot;sass&quot;&gt;</code>、<code>&lt;style scoped&gt;</code>，不允许<code>&lt;style scoped lang=&quot;sass&quot;&gt;</code>，同理如果要使用 pug ，必须书写成<code>&lt;template lang=&quot;pug&quot;&gt;</code>，不允许多空格或少空格</p>
@@ -467,11 +478,34 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 }
 </code></pre>
 </li>
+<li>
+<p>在 html 里的 <code>&lt;img src=&quot;./..&quot;&gt;</code> 和 css 里的 <code>background:url(./..)</code> 以 <code>.</code> 开头的资源会自动解决，小于 4k 的图片会自动转为 base64，无法自动解决的静态资源需要手动在 static 选项添加资源目录名或具体资源文件名，如下示例的资源不能自动处理</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">v-for</span>=<span class="hljs-string">"i in images"</span> <span class="hljs-attr">:src</span>=<span class="hljs-string">"i.src"</span>&gt;</span>
+</code></pre>
+</li>
+</ul>
+<h2>常见错误</h2>
+<ul>
+<li>
+<p>运行 <code>pr1 build</code> 出错</p>
+<blockquote>
+<p><code>(node:20976) UnhandledPromiseRejectionWarning: Error: EBUSY: resource busy or locked, rmdir 'D:\xx\dist'</code></p>
+</blockquote>
+<p>dist 目录繁忙或锁定，无法删除。解决方案：检查 dist/index.html 是否在浏览器中打开，将其关闭再重新打包</p>
+</li>
 </ul>
 <h2>更新日志</h2>
+<p>### v0.2.0 (2019-04-29)</p>
+<ul>
+<li>添加支持 <code>import a, { b, c } ...</code> 和 <code>export { a } from ...</code> 语法</li>
+<li>添加支持少于4k的图片压缩成base64</li>
+<li>添加 html 和 css 里的图片资源自动拷贝到相应的静态文件夹的功能</li>
+<li>添加 html2VueRender 选项，默认开启，即 html 和 js 同级目录且同名 html 会转成 Vue render 函数</li>
+<li>解决 sass 使用 <code>@import</code> 导入路径问题</li>
+</ul>
 <p>### v0.1.1 (2019-04-26)</p>
 <ul>
-<li>添加热更新选项，只支持更新 style 或 reload 刷新页面两种方式</li>
+<li>添加热更新 hot 选项，只支持更新 style 或 reload 刷新页面两种方式</li>
 <li>更新文档，添加和 vue-cli 的对比</li>
 </ul>
 <p>### v0.0.10 (2019-04-24)</p>
