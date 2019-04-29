@@ -10,7 +10,7 @@ Vue 项目前端工程构建工具，使用 Rollup 打包
 
 ## 特点优势
 
-- 源码少，除去第三方工具，飘刃所有核心代码共8个文件不到1000行，看源码不头疼
+- 源码少，除去第三方工具，飘刃所有核心代码共8个文件1000余行，看源码不头疼
 - 速度快，开发过程中无需 babel 转译，飘刃只转 import/export ，其余直接输出到浏览器 
 - 效率高，使用谷歌浏览器 99.9% 源码调试，无需 source map ，告别组件 this 乱指 window
 - 够直观，开发环境可在浏览器 Elements 调试板块直接从 dom 属性找到组件对应的文件位置
@@ -296,7 +296,7 @@ import a, { efg as b, c } from './util.js'      => const { default: a, efg: b, c
  export default a                               => exports['/xx.js'].default = a
  export { abc as a }                            => Object.assign(exports['/xx.js'], {a: abc} = { a })
  export class e {}                              => exports['/xx.js'].e = class e {}
- export { default as d } from './util.js'       => Object.assign(exports, await _import('./util.js'))
+ export { default as d } from './util.js'       => Object.assign(exports, await (async () => { const { default: d } await _import('./util.js'); return { d }})()
 ```
 
 ## 静态资源
@@ -409,7 +409,7 @@ doSome(data => {
 
 ## 更新日志
 
-\### v0.1.2 (2019-04-xx)
+\### v0.2.0 (2019-04-xx)
 
 - 支持 import a, { b, c } ... 和 export { a } from ... 语法
 - 支持少于4k的图片压缩成base64
