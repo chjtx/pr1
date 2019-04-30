@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const server = require('./server.js')
-const { appRootPath } = require('./parse.js')
+const { appRootPath } = require('./tools.js')
 const { build } = require('./build.js')
 const cwd = process.cwd()
 

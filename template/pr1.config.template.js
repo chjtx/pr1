@@ -22,6 +22,7 @@ module.exports = {
       'vue/dist/vue.esm.browser.js': 'Vue'
     },
     plugins: [
+      // rollup-plugin-node-resolve 用于解决引用 node_modules 资源路径
       nodeResolve()
     ]
   },

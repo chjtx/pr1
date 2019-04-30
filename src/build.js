@@ -3,16 +3,17 @@ const path = require('path')
 const babel = require('@babel/core')
 const uglify = require('uglify-js')
 const fs = require('fs-extra')
-const crypto = require('crypto')
-const { appRootPath } = require('./parse.js')
-const pr1Plugin = require('./rollup-plugin-pr1.js')()
+const { appRootPath, getShortMd5 } = require('./tools.js')
+const vueComponent = require('./rollup-plugins/rollup-plugin-pr1.js')
 const cwd = process.cwd()
+
+const pr1Plugins = [vueComponent()]
 
 async function bundle (input, out, config, outName) {
   const inputOptions = {
     input: input,
     external: (config.vendor || []).map(i => i[0]),
-    plugins: [...config.rollupConfig.plugins, pr1Plugin],
+    plugins: [...config.rollupConfig.plugins, ...pr1Plugins],
     context: 'window'
   }
   const outputOptions = {
@@ -43,13 +44,6 @@ async function bundle (input, out, config, outName) {
   return code
 }
 
-function getShortMd5 (txt) {
-  const hash = crypto.createHash('md5')
-  hash.update(txt)
-  const hex = hash.digest('hex').slice(0, 6)
-  return hex
-}
-
 // 给html的src或href添加hash防缓存
 function addSrcHash (txt, distDir) {
   let html = txt
@@ -60,7 +54,7 @@ function addSrcHash (txt, distDir) {
     if (src.indexOf('http') !== 0 && fs.existsSync(absoulteSrc)) {
       return {
         src: i,
-        md5Src: i.replace(src, src + (~src.indexOf('?') ? '&' : '?') + `v=${getShortMd5(fs.readFileSync(absoulteSrc))}`)
+        md5Src: i.replace(src, src + (src.indexOf('?') > -1 ? '&' : '?') + `${getShortMd5(fs.readFileSync(absoulteSrc))}`)
       }
     }
     return null
@@ -128,7 +122,9 @@ async function compileHTML (config, originIndexPath, targetIndexPath) {
 
   // 将 vendors 插入 pr1_module 之前
   const pr1ModuleScript = /^.+pr1_module=1.+$/m.exec(indexHtml)
-  indexHtml = indexHtml.replace(pr1ModuleScript[0], `${vendors.join('\n')}\n${pr1ModuleScript[0]}`).replace('pr1_module=1', '')
+  indexHtml = indexHtml.replace(pr1ModuleScript[0], `${vendors.join('\n')}\n${pr1ModuleScript[0]}`)
+    // 去掉首页的 pr1_module=1 标识
+    .replace(/(\?|&)pr1_module=1/, '')
 
   // 将index.html里的所有内部路径加上hash
   indexHtml = addSrcHash(indexHtml, distDir)
@@ -139,9 +135,6 @@ async function compileHTML (config, originIndexPath, targetIndexPath) {
 async function compile (entry, config, dist) {
   const originIndexPath = path.resolve(cwd, entry)
   const targetIndexPath = path.resolve(dist, entry)
-
-  process.env.PR1_CONFIG_ORIGIN_INDEX = originIndexPath
-  process.env.PR1_CONFIG_TARGET_INDEX = targetIndexPath
 
   if (config.beforeBuild) {
     await config.beforeBuild(originIndexPath)
@@ -165,6 +158,9 @@ module.exports = {
     const dist = config.dist
       ? path.resolve(path.dirname(configAbsolutePath), config.dist)
       : path.resolve(appRootPath, './dist/')
+
+    process.env.PR1_CONFIG_TARGET = dist
+
     if (fs.existsSync(dist)) {
       fs.removeSync(dist)
     }

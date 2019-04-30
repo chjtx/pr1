@@ -1,7 +1,8 @@
-const fs = require('fs')
 const path = require('path')
-const pr1Plugin = require('./rollup-plugin-pr1.js')()
+const vueComponent = require('./rollup-plugins/rollup-plugin-pr1.js')
 const cwd = process.cwd()
+
+const pr1Plugins = [vueComponent()]
 
 function parseModule (txt, url) {
   if (/\bimport\b|\bexport\b/.test(txt)) {
@@ -173,26 +174,12 @@ function switchExport (txt, url) {
   return txt
 }
 
-// 查找app根目录
-function findAppRootPath () {
-  let currentPath = cwd
-  while (currentPath !== '/' && !/^[a-zA-Z]:\\$/.test(currentPath)) {
-    if (fs.existsSync(path.resolve(currentPath, 'package.json'))) {
-      return currentPath
-    }
-    currentPath = path.resolve(currentPath, '..')
-  }
-  return null
-}
-
-const appRootPath = findAppRootPath()
-
 module.exports = {
   parsePr1: async function (code, url, config) {
     const id = path.resolve(cwd, '.' + url)
     // 执行rollup插件的transform
     if (config && config.rollupConfig && config.rollupConfig.plugins) {
-      code = await [...config.rollupConfig.plugins, pr1Plugin].reduce(async (code, plugin) => {
+      code = await [...config.rollupConfig.plugins, ...pr1Plugins].reduce(async (code, plugin) => {
         if (typeof plugin.transform === 'function') {
           const result = await plugin.transform(await code, id)
           if (result) {
@@ -203,12 +190,5 @@ module.exports = {
       }, code)
     }
     return parseModule(code, url)
-  },
-  parseNode (url) {
-    const p = path.resolve(appRootPath, 'node_modules', url)
-    if (fs.existsSync(p)) {
-      return parseModule(fs.readFileSync(p).toString(), url)
-    }
-  },
-  appRootPath
+  }
 }

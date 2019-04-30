@@ -10,7 +10,6 @@
 
 ## 特点优势
 
-- 源码少，除去第三方工具，飘刃所有核心代码共8个文件1000余行，看源码不头疼
 - 速度快，开发过程中无需 babel 转译，飘刃只转 import/export ，其余直接输出到浏览器 
 - 效率高，使用谷歌浏览器 99.9% 源码调试，无需 source map ，告别组件 this 乱指 window
 - 够直观，开发环境可在浏览器 Elements 调试板块直接从 dom 属性找到组件对应的文件位置
@@ -33,7 +32,7 @@ __对比环境__ 华为荣耀 MagicBook Windows 10 家庭版 i5 8G 64位 联通4
 | 热更响应 | 支持更新 css 和刷新页面<br>两种方式，不支持 js 更新<br>更新 js 需要刷新页面<br>响应速度 立即 | 支持 css 和 js 更新，vue 组件更新<br>有点鸡肋，很大概率需要手动更新<br>才能看到预期效果，每次变化都需<br>要编译，响应速度 稍慢 |
 | 打包工具 | Rollup | Webpack |
 | 打包时间 | 5s 项目内容多少决定 | 10s 项目内容多少决定 |
-| 静态资源 | 所有资源路径在任何地方<br>都固定相对于入口文件 | 少于4k的图片会被转为 base64<br>保存在css文件里 |
+| 静态资源 | 暂只支持`.`和`/`开头<br>的静态资源 | 支持`.`、`/`、`@`和`~`<br>开头的静态资源 |
 | 多页应用 | 无需配置 | 需要配置 pages |
 | 插件支持 | Rollup 插件规范 | Webpack 插件规范 |
 | 单元测试 | 暂不支持 | 可选 |
@@ -237,8 +236,7 @@ module.exports = {
       'vue/dist/vue.esm.browser.js': 'Vue'
     },
     plugins: [
-      // rollup-plugin-node-resolve 用于 rollup 解决引用 node_modules 资源使用
-      // 飘刃在开发环境不会运行该模块，打包会自动执行
+      // rollup-plugin-node-resolve 用于解决引用 node_modules 资源路径
       nodeResolve()
     ]
   },
@@ -277,7 +275,7 @@ module.exports = {
 
 把 import/export 转换成 async/await 让浏览器可以支持引入除 js 外的其它资源
 
-飘刃会把非 js 资源通过 rollup 的插件转换成 js 资源再传到浏览器，开发环境只会调用 rollup 插件的 transform 方法
+飘刃会把非 js 资源通过 rollup 的插件转换成 js 资源再传到浏览器，开发环境只会调用 rollup 插件的 `resolveId` 和 `transform` 方法
 
 import/export 转换关系如下：
 
@@ -304,7 +302,11 @@ import a, { efg as b, c } from './util.js'      => const { default: a, efg: b, c
 
 ## 静态资源
 
-所有在 html 或 css 引入的静态资源，路径都是相对于入口 html 文件，
+支持两种静态资源路径 以 `/` 开头和以 `.` 开头
+
+- `/` 开头的资源路径相对站点根目录
+- `.` 开头的资源路径相对当前引用的文件
+
 如下目录结构
 
 ```sh
@@ -317,12 +319,12 @@ src/
     |-- one/
       |-- two/
         |-- three/
-          |-- a.vue # background-url: ./static/images/a.png
-    |-- b.html  # img src="./static/images/a.png"
+          |-- a.vue # background-url: /static/images/a.png
+    |-- b.html  # img src="../static/images/a.png"
     |-- b.js
 ```
 
-如上所示，a.vue 和 b.html 在不同的目录路径上，但是引入相同的 a.png 文件，都是使用相同的相对于 index.html 的路径
+绝对路径和相对路径都是引用同一张图片
 
 ## 多页应用
 
@@ -385,13 +387,12 @@ doSome(data => {
 
 ## 注意事项
 
-- 开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径不是以`.`开关，将会从项目根目录的 node_modules 导入
+- 开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径不能解释，将会使用 `rollup-plugin-node-resolve` 插件解决
+- 如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件
 - 所有 js 文件的 import 引入的路径都必须带后缀，省略会出错
-- 如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件用以打包
-- 所有静态资源路径都应该相对于入口 html 文件，除了 sass
-- sass 的 `@import` 导入是相对于当前 sass 所在文件的
+- sass 的 `@import` 导入是相对于当前 sass 所在文件的，只支持 @import sass，暂不支持自动拷贝 @import css 的文件
 - 如果要使用 sass 或 scoped，必须保持严格格式，只允许`<style lang="sass" scoped>`、`<style lang="sass">`、`<style scoped>`，不允许`<style scoped lang="sass">`，同理如果要使用 pug ，必须书写成`<template lang="pug">`，不允许多空格或少空格
-- 如果同目录存在同名的 html 和 js 文件，则视为 Vue 组件，打包时会自动关联转成 render 函数。同名 js 文件只能用 template: html，不能用其它变量
+- 如果同目录存在同名的 html 和 js 文件并开启 `html2VueRender` 选项，默认开启，则视为 Vue 组件，打包时会自动关联转成 render 函数。同名 js 文件只能用 template: html，不能用其它变量
 
   ```js
   // html/js 的 Vue 组件只能用 html 作为变量名引入同名 html 文件
@@ -401,7 +402,7 @@ doSome(data => {
     template: html
   }
   ```
-- 在 html 里的 `<img src="./..">` 和 css 里的 `background:url(./..)` 以 `.` 开头的资源会自动解决，小于 4k 的图片会自动转为 base64，无法自动解决的静态资源需要手动在 static 选项添加资源目录名或具体资源文件名，如下示例的资源不能自动处理
+- 在 html 里的 `<img src="./..">` 和 css 里的 `background:url(./..)` 小于 4k 的图片会自动转为 base64，无法自动解决的静态资源需要手动在 static 选项添加资源目录名或具体资源文件名，如下示例的资源不能自动处理
 
   ```html
   <img v-for="i in images" :src="i.src">
@@ -417,6 +418,12 @@ doSome(data => {
 
 
 ## 更新日志
+
+\### v0.2.1 (2019-04-30)
+
+- 添加支持 rollup 插件的 `resolveId` 方法
+- 优化项目文件结构
+- 支持静态文件使用相对路径相对于当前引用文件
 
 \### v0.2.0 (2019-04-29)
 

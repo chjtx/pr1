@@ -4,6 +4,7 @@ const CleanCSS = require('clean-css')
 const { createFilter } = require('rollup-pluginutils')
 const compiler = require('vue-template-compiler')
 const { compileTemplate } = require('@vue/component-compiler-utils')
+const { getShortMd5 } = require('../tools.js')
 const pug = require('pug')
 const sass = require('node-sass')
 const cwd = process.cwd()
@@ -42,13 +43,16 @@ function releaseVueTemplate (html) {
   return [template, script]
 }
 
-function findStatic (assets, type) {
+function findStatic (assets, type, id) {
   let content = assets
   let matches = []
   let urls = []
   if (type === 'url') {
     content = content.replace(/\/\*([\s\S]+)?\*\//g, '')
     matches = content.match(/url([^)]+)/g)
+    if (!matches) {
+      return assets
+    }
     urls = matches.map(i => {
       return i.replace(/^url\(("|')?/, '').replace(/("|')?\)$/, '')
     })
@@ -58,34 +62,44 @@ function findStatic (assets, type) {
     matches = content.match(/src=("|')([^"']+)\1/g) || []
     // src=g.img 没引号
     matches = matches.concat(content.match(/src=([^"' ]+)/g) || [])
+    if (matches.length === 0) {
+      return assets
+    }
     urls = matches.map(i => {
       return i.replace(/^src=("|')?/, '').replace(/("|')$/, '')
     })
   }
-  const replaceArray = resolveStatic(urls.filter(i => i.indexOf('.') === 0))
+  const replaceArray = resolveStatic(urls, id)
   replaceArray.forEach(i => {
     content = content.replace(i[0], i[1])
   })
   return content
 }
 
-function resolveStatic (urls) {
+function resolveStatic (urls, id) {
   const replaceArray = []
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i].split('?')[0]
-    let originPath = path.resolve(path.dirname(process.env.PR1_CONFIG_ORIGIN_INDEX), url)
+    let originPath = url.indexOf('/') === 0
+      // 使用绝对路径相对于入口 index.html
+      ? path.resolve(cwd, '.' + url)
+      // 使用相对路径相对于当前文件
+      : path.resolve(path.dirname(id), url)
     if (fs.existsSync(originPath)) {
       const ext = path.extname(url)
-      const targetPath = path.resolve(path.dirname(process.env.PR1_CONFIG_TARGET_INDEX), url)
-      if (/\.(png|jpg|jpeg|gif)/.test(ext)) {
-        if (fs.lstatSync(originPath).size < 4096) {
-          const image = fs.readFileSync(originPath).toString('base64')
-          let data = `data:image/${ext.slice(1)};base64,${image}`
-          replaceArray.push([urls[i], data])
-        } else {
-          fs.copySync(originPath, targetPath)
-        }
+      const file = fs.readFileSync(originPath)
+      const targetPath = url.indexOf('/') === 0
+        ? path.resolve(process.env.PR1_CONFIG_TARGET, '.' + url)
+        : path.resolve(process.env.PR1_CONFIG_TARGET +
+          (originPath.replace(cwd, '').replace(/\\/g, '/')
+            .replace(url.slice(url.indexOf('/')), '')
+          ), url)
+      if (/\.(png|jpg|jpeg|gif)/.test(ext) && fs.lstatSync(originPath).size < 4096) {
+        const image = file.toString('base64')
+        let data = `data:image/${ext.slice(1)};base64,${image}`
+        replaceArray.push([urls[i], data])
       } else {
+        replaceArray.push([urls[i], urls[i] + (urls[i].indexOf('?') > -1 ? '&' : '?') + getShortMd5(file)])
         fs.copySync(originPath, targetPath)
       }
     }
@@ -96,7 +110,6 @@ function resolveStatic (urls) {
 module.exports = function () {
   const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.vue'])
   let css = []
-  let htmls = []
   let count = 0
   const cacheScope = {}
 
@@ -154,7 +167,6 @@ module.exports = function () {
       if (isVue) {
         [html, script] = releaseVueTemplate(html)
       }
-      htmls.push(html)
 
       // style作用域
       let scope = ''
@@ -194,9 +206,11 @@ module.exports = function () {
         ].join('\n')
       } else {
         // 生产环境
+        // 查找 style 和 html 里的静态资源
+        style = findStatic(style, 'url', id)
+        html = findStatic(html, 'src', id)
         // 缓存css
         css.push(style)
-        html = findStatic(html, 'src')
         // html转成render函数
         if ((process.env.PR1_CONFIG_HTML_2_VUE_RENDER && fs.existsSync(id.replace(/\.html$/, '.js'))) || isVue) {
           const compiled = compileTemplate({
@@ -218,21 +232,12 @@ module.exports = function () {
     generateBundle: async function (outputOptions) {
       const cssPath = outputOptions.file.replace(/\.js$/, '.css')
       if (css.length) {
-        // 查找 css 里的静态资源
-        const cssText = findStatic(css.join('\n'), 'url')
-
         // 打包 css 文件
-        const output = new CleanCSS().minify(cssText)
+        const output = new CleanCSS().minify(css.join('\n'))
         fs.ensureDirSync(path.dirname(cssPath))
         fs.writeFileSync(cssPath, output.styles)
         css = []
       }
-      // if (htmls.length) {
-      //   // 查找 html 里的静态资源
-      //   await findStatic(htmls, 'src')
-
-      //   htmls = []
-      // }
     }
   }
 }

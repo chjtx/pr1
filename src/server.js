@@ -3,7 +3,7 @@ const path = require('path')
 const { URL } = require('url')
 const fs = require('fs')
 const WebSocket = require('ws')
-const { parsePr1, parseNode } = require('./parse.js')
+const { parsePr1 } = require('./parse.js')
 
 require('colors')
 
@@ -78,13 +78,7 @@ const client = fs.readFileSync(path.resolve(__dirname, './client.js')).toString(
 
 module.exports = function server (port, config) {
   const server = http.createServer(async (req, res) => {
-    let isPr1Module = false
-    if (req.url.indexOf('pr1_module=1') > -1) {
-      isPr1Module = true
-    } else if (req.url.indexOf('node_module=1') > -1) {
-      res.end(parseNode(req.url.slice(1).split('?')[0]))
-      return
-    }
+    // pr1-client.js
     if (req.url === '/pr1-client.js') {
       res.end(client.replace('{{port}}', port)
         .replace('`{{configHot}}`', !!config.hot)
@@ -94,6 +88,37 @@ module.exports = function server (port, config) {
 
     const parseURL = new URL(req.url, 'http://localhost/')
     let pathname = parseURL.pathname
+    const realPath = path.resolve(cwd, '.' + pathname)
+
+    // 飘刃模块
+    if (req.url.indexOf('pr1_module=1') > -1) {
+      const importee = parseURL.searchParams.get('importee')
+      let importer = parseURL.searchParams.get('importer')
+      let filePath = ''
+      let file = ''
+      filePath = importer ? path.resolve(cwd, path.dirname(importer), importee) : realPath
+      // 若文件不存在，尝试使用 rollup 插件的 resolveId 解决
+      if (!fs.existsSync(filePath)) {
+        importer = path.resolve(cwd, '.' + importer)
+        filePath = await config.rollupConfig.plugins.reduce(async (id, plugin) => {
+          if (typeof plugin.resolveId === 'function') {
+            const result = await plugin.resolveId(importee, importer)
+            return result || id
+          }
+          return id
+        }, filePath)
+      }
+      try {
+        file = fs.readFileSync(filePath)
+        res.writeHead(200)
+        res.end(await parsePr1(file.toString(), pathname, config))
+      } catch (e) {
+        res.writeHead(500)
+        res.end(e.message)
+      }
+      return
+    }
+
     if (/\/$/.test(pathname)) {
       pathname = pathname + 'index.html'
     }
@@ -101,7 +126,6 @@ module.exports = function server (port, config) {
     let ext = path.extname(pathname)
     ext = ext ? ext.slice(1) : 'unknown'
 
-    const realPath = path.resolve(cwd, '.' + pathname)
     const contentType = mime[ext] || 'text/plain'
     let file = null
 
@@ -115,10 +139,7 @@ module.exports = function server (port, config) {
       }
       // 200
       res.writeHead(200, { 'Content-Type': contentType })
-      if (isPr1Module) {
-        // 飘刃模块
-        res.write(await parsePr1(file.toString(), pathname, config))
-      } else if (contentType === 'text/html') {
+      if (contentType === 'text/html') {
         // 普通html文件
         res.write(file.toString().replace(/(<head>[\n\r]+)/, `$1  <script src="/pr1-client.js"></script>\n`))
       } else {

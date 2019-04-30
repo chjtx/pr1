@@ -1,6 +1,5 @@
 (function (win) {
   const cache = {}
-  let isNodeModule = false
 
   function dirname (p) {
     return p.slice(0, p.lastIndexOf('/'))
@@ -8,13 +7,6 @@
   function resolvePath (currentPath, relativePath) {
     var dir = dirname(relativePath)
     var path = ''
-
-    if (currentPath.indexOf('.') === 0 || currentPath.indexOf('/') === 0) {
-      isNodeModule = false
-    } else {
-      isNodeModule = true
-      return currentPath
-    }
 
     // 支持http/https请求
     if (/^http/.test(currentPath)) {
@@ -30,7 +22,6 @@
       })
       path = (dir + '/' + currentPath)
     }
-    // return path.replace(window.location.origin, '')
     return path
   }
 
@@ -94,11 +85,8 @@
 
       return new Promise(resolve => {
         let src = ''
-        if (isNodeModule) {
-          src = '/' + uniquePath + '?node_module=1'
-        } else {
-          src = uniquePath + (uniquePath.indexOf('?') === -1 ? '?' : '&') + 'pr1_module=1'
-        }
+        src = uniquePath + (uniquePath.indexOf('?') === -1 ? '?' : '&') +
+          `pr1_module=1&importee=${path}&importer=${parentPath}`
         cache[uniquePath].resolve = (rs) => {
           resolve(rs && rs.exports)
           setTimeout(() => {
