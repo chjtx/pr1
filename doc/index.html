@@ -39,6 +39,17 @@
     top: 38px;
     width: 120px;
     height: 600px;
+    background: #000;
+  }
+  .big {
+      display: block;
+  }
+  .small {
+    display: none;
+  }
+  #ad img {
+    display: block;
+    margin: 0 auto;
   }
   @media screen and (max-width: 768px) {
     #ad {
@@ -53,6 +64,12 @@
       position: absolute;
       box-sizing: border-box;
       padding-bottom: 100px;
+    }
+    .big {
+        display: none;
+      }
+    .small {
+      display: block;
     }
   }
   </style>
@@ -75,7 +92,6 @@
 <p>【 码 云 】 <a target="_blank" href="https://gitee.com/chenjianlong/pr1">https://gitee.com/chenjianlong/pr1</a></p>
 <h2>特点优势</h2>
 <ul>
-<li>源码少，除去第三方工具，飘刃所有核心代码共8个文件1000余行，看源码不头疼</li>
 <li>速度快，开发过程中无需 babel 转译，飘刃只转 import/export ，其余直接输出到浏览器</li>
 <li>效率高，使用谷歌浏览器 99.9% 源码调试，无需 source map ，告别组件 this 乱指 window</li>
 <li>够直观，开发环境可在浏览器 Elements 调试板块直接从 dom 属性找到组件对应的文件位置</li>
@@ -149,8 +165,8 @@
 </tr>
 <tr>
 <td style="text-align:center">静态资源</td>
-<td style="text-align:left">所有资源路径在任何地方<br>都固定相对于入口文件</td>
-<td style="text-align:left">少于4k的图片会被转为 base64<br>保存在css文件里</td>
+<td style="text-align:left">暂只支持<code>.</code>和<code>/</code>开头<br>的静态资源</td>
+<td style="text-align:left">支持<code>.</code>、<code>/</code>、<code>@</code>和<code>~</code><br>开头的静态资源</td>
 </tr>
 <tr>
 <td style="text-align:center">多页应用</td>
@@ -337,8 +353,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
       <span class="hljs-string">'vue/dist/vue.esm.browser.js'</span>: <span class="hljs-string">'Vue'</span>
     },
     <span class="hljs-attr">plugins</span>: [
-      <span class="hljs-comment">// rollup-plugin-node-resolve 用于 rollup 解决引用 node_modules 资源使用</span>
-      <span class="hljs-comment">// 飘刃在开发环境不会运行该模块，打包会自动执行</span>
+      <span class="hljs-comment">// rollup-plugin-node-resolve 用于解决引用 node_modules 资源路径</span>
       nodeResolve()
     ]
   },
@@ -373,7 +388,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <h2>运作原理</h2>
 <p>飘刃会拦截所有带有 pr1_module=1 参数的 url ，并处理对应的文件资源，目前只会处理 .vue .html .js 3种文件</p>
 <p>把 import/export 转换成 async/await 让浏览器可以支持引入除 js 外的其它资源</p>
-<p>飘刃会把非 js 资源通过 rollup 的插件转换成 js 资源再传到浏览器，开发环境只会调用 rollup 插件的 transform 方法</p>
+<p>飘刃会把非 js 资源通过 rollup 的插件转换成 js 资源再传到浏览器，开发环境只会调用 rollup 插件的 <code>resolveId</code> 和 <code>transform</code> 方法</p>
 <p>import/export 转换关系如下：</p>
 <pre class="hljs"><code><span class="hljs-comment">// import 规则</span>
 <span class="hljs-keyword">import</span> { a, b, c } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>             =&gt; <span class="hljs-keyword">const</span> { a, b, c } = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
@@ -393,8 +408,12 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
  <span class="hljs-keyword">export</span> { <span class="hljs-keyword">default</span> <span class="hljs-keyword">as</span> d } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>       =&gt; <span class="hljs-built_in">Object</span>.assign(exports, <span class="hljs-keyword">await</span> (<span class="hljs-keyword">async</span> () =&gt; { <span class="hljs-keyword">const</span> { <span class="hljs-attr">default</span>: d } <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>); <span class="hljs-keyword">return</span> { d }})()
 </code></pre>
 <h2>静态资源</h2>
-<p>所有在 html 或 css 引入的静态资源，路径都是相对于入口 html 文件，
-如下目录结构</p>
+<p>支持两种静态资源路径 以 <code>/</code> 开头和以 <code>.</code> 开头</p>
+<ul>
+<li><code>/</code> 开头的资源路径相对站点根目录</li>
+<li><code>.</code> 开头的资源路径相对当前引用的文件</li>
+</ul>
+<p>如下目录结构</p>
 <pre class="hljs"><code>src/
   |-- index.html
   |-- static/
@@ -404,11 +423,11 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
     |-- one/
       |-- two/
         |-- three/
-          |-- a.vue <span class="hljs-comment"># background-url: ./static/images/a.png</span>
-    |-- b.html  <span class="hljs-comment"># img src="./static/images/a.png"</span>
+          |-- a.vue <span class="hljs-comment"># background-url: /static/images/a.png</span>
+    |-- b.html  <span class="hljs-comment"># img src="../static/images/a.png"</span>
     |-- b.js
 </code></pre>
-<p>如上所示，a.vue 和 b.html 在不同的目录路径上，但是引入相同的 a.png 文件，都是使用相同的相对于 index.html 的路径</p>
+<p>绝对路径和相对路径都是引用同一张图片</p>
 <h2>多页应用</h2>
 <p>飘刃处理多面应用非常简单，如下目录结构</p>
 <pre class="hljs"><code>src/
@@ -451,25 +470,22 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <h2>注意事项</h2>
 <ul>
 <li>
-<p>开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径不是以<code>.</code>开关，将会从项目根目录的 node_modules 导入</p>
+<p>开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径不能解释，将会使用 <code>rollup-plugin-node-resolve</code> 插件解决</p>
+</li>
+<li>
+<p>如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件</p>
 </li>
 <li>
 <p>所有 js 文件的 import 引入的路径都必须带后缀，省略会出错</p>
 </li>
 <li>
-<p>如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件用以打包</p>
-</li>
-<li>
-<p>所有静态资源路径都应该相对于入口 html 文件，除了 sass</p>
-</li>
-<li>
-<p>sass 的 <code>@import</code> 导入是相对于当前 sass 所在文件的</p>
+<p>sass 的 <code>@import</code> 导入是相对于当前 sass 所在文件的，只支持 @import sass，暂不支持自动拷贝 @import css 的文件</p>
 </li>
 <li>
 <p>如果要使用 sass 或 scoped，必须保持严格格式，只允许<code>&lt;style lang=&quot;sass&quot; scoped&gt;</code>、<code>&lt;style lang=&quot;sass&quot;&gt;</code>、<code>&lt;style scoped&gt;</code>，不允许<code>&lt;style scoped lang=&quot;sass&quot;&gt;</code>，同理如果要使用 pug ，必须书写成<code>&lt;template lang=&quot;pug&quot;&gt;</code>，不允许多空格或少空格</p>
 </li>
 <li>
-<p>如果同目录存在同名的 html 和 js 文件，则视为 Vue 组件，打包时会自动关联转成 render 函数。同名 js 文件只能用 template: html，不能用其它变量</p>
+<p>如果同目录存在同名的 html 和 js 文件并开启 <code>html2VueRender</code> 选项，默认开启，则视为 Vue 组件，打包时会自动关联转成 render 函数。同名 js 文件只能用 template: html，不能用其它变量</p>
 <pre class="hljs"><code><span class="hljs-comment">// html/js 的 Vue 组件只能用 html 作为变量名引入同名 html 文件</span>
 <span class="hljs-keyword">import</span> html <span class="hljs-keyword">from</span> <span class="hljs-string">'./sameName.html'</span>
 
@@ -479,7 +495,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 </code></pre>
 </li>
 <li>
-<p>在 html 里的 <code>&lt;img src=&quot;./..&quot;&gt;</code> 和 css 里的 <code>background:url(./..)</code> 以 <code>.</code> 开头的资源会自动解决，小于 4k 的图片会自动转为 base64，无法自动解决的静态资源需要手动在 static 选项添加资源目录名或具体资源文件名，如下示例的资源不能自动处理</p>
+<p>在 html 里的 <code>&lt;img src=&quot;./..&quot;&gt;</code> 和 css 里的 <code>background:url(./..)</code> 小于 4k 的图片会自动转为 base64，无法自动解决的静态资源需要手动在 static 选项添加资源目录名或具体资源文件名，如下示例的资源不能自动处理</p>
 <pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">v-for</span>=<span class="hljs-string">"i in images"</span> <span class="hljs-attr">:src</span>=<span class="hljs-string">"i.src"</span>&gt;</span>
 </code></pre>
 </li>
@@ -495,6 +511,12 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 </li>
 </ul>
 <h2>更新日志</h2>
+<p>### v0.2.1 (2019-04-30)</p>
+<ul>
+<li>添加支持 rollup 插件的 <code>resolveId</code> 方法</li>
+<li>优化项目文件结构</li>
+<li>支持静态文件使用相对路径相对于当前引用文件</li>
+</ul>
 <p>### v0.2.0 (2019-04-29)</p>
 <ul>
 <li>添加支持 <code>import a, { b, c } ...</code> 和 <code>export { a } from ...</code> 语法</li>
@@ -523,6 +545,13 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <h2>开源协议</h2>
 <p>MIT</p>
 </div>
-  <iframe id="ad" frameborder="no" marginwidth="0" marginheight="0" scrolling="no" src="//www.chjtx.com/JTaro/gg.html?v=1&from=pr1"></iframe>
+  <div id="ad">
+    <a class="big" target="_blank" href="https://goodgoodsbook.com/?from=pr1">
+      <img src="http://www.chjtx.com/assets/images/gg-big.jpg">
+    </a>
+    <a class="small" target="_blank" href="https://goodgoodsbook.com/?from=pr1">
+      <img src="http://www.chjtx.com/assets/images/gg-small.jpg">
+    </a>
+  </div>
 </body>
 </html>

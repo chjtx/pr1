@@ -39,6 +39,17 @@
     top: 38px;
     width: 120px;
     height: 600px;
+    background: #000;
+  }
+  .big {
+      display: block;
+  }
+  .small {
+    display: none;
+  }
+  #ad img {
+    display: block;
+    margin: 0 auto;
   }
   @media screen and (max-width: 768px) {
     #ad {
@@ -53,6 +64,12 @@
       position: absolute;
       box-sizing: border-box;
       padding-bottom: 100px;
+    }
+    .big {
+        display: none;
+      }
+    .small {
+      display: block;
     }
   }
   </style>
@@ -69,6 +86,13 @@
 <body>
   <!-- <a target="_blank" href="https://github.com/chjtx/pr1"><img style="position: fixed; top: 0; right: 0; border: 0; z-index: 9" src="http://www.chjtx.com/assets/images/jtaro-github-ribbon.png"></a> -->
   <div class="content">{{content}}</div>
-  <iframe id="ad" frameborder="no" marginwidth="0" marginheight="0" scrolling="no" src="//www.chjtx.com/JTaro/gg.html?v=1&from=pr1"></iframe>
+  <div id="ad">
+    <a class="big" target="_blank" href="https://goodgoodsbook.com/?from=pr1">
+      <img src="http://www.chjtx.com/assets/images/gg-big.jpg">
+    </a>
+    <a class="small" target="_blank" href="https://goodgoodsbook.com/?from=pr1">
+      <img src="http://www.chjtx.com/assets/images/gg-small.jpg">
+    </a>
+  </div>
 </body>
 </html>
