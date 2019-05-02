@@ -1,11 +1,12 @@
 *
 */**
 !bin/pr1.js
+!src/rollup-plugins/rollup-plugin-pr1.js
 !src/build.js
 !src/client.js
 !src/init.js
 !src/parse.js
 !src/pr1.js
-!src/rollup-plugin-pr1.js
 !src/server.js
+!src/tools.js
 !template/**

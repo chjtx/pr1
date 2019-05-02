@@ -410,14 +410,27 @@ doSome(data => {
 
 ## 常见错误
 
+- 运行 `pr1 start` 出错
+  >`Error: listen EADDRINUSE :::8686`
+  >
+  >`at Server.setupListenHandle [as _listen2] (net.js:1335:14)`
+  >
+  >`at listenInCluster (net.js:1383:12)`
+
+  8686 端口被占用，解决方案：指定端口运行或先关闭占用 8686 端口的程序
+
 - 运行 `pr1 build` 出错
 
   >`(node:20976) UnhandledPromiseRejectionWarning: Error: EBUSY: resource busy or locked, rmdir 'D:\xx\dist'`
 
   dist 目录繁忙或锁定，无法删除。解决方案：检查 dist/index.html 是否在浏览器中打开，将其关闭再重新打包
 
-
 ## 更新日志
+
+\### (2019-05-02)
+
+- v0.2.2 修复 v0.2.1 错误 npm 包
+- v0.2.3 修复 没有默认 index.html 的问题
 
 \### v0.2.1 (2019-04-30)
 

@@ -88,6 +88,9 @@ module.exports = function server (port, config) {
 
     const parseURL = new URL(req.url, 'http://localhost/')
     let pathname = parseURL.pathname
+    if (/\/$/.test(pathname)) {
+      pathname = pathname + 'index.html'
+    }
     const realPath = path.resolve(cwd, '.' + pathname)
 
     // 飘刃模块
@@ -119,10 +122,6 @@ module.exports = function server (port, config) {
       return
     }
 
-    if (/\/$/.test(pathname)) {
-      pathname = pathname + 'index.html'
-    }
-
     let ext = path.extname(pathname)
     ext = ext ? ext.slice(1) : 'unknown'
 
@@ -131,11 +130,12 @@ module.exports = function server (port, config) {
 
     if (fs.existsSync(realPath)) {
       try {
-        file = fs.readFileSync(path.resolve(cwd, realPath))
+        file = fs.readFileSync(realPath)
       } catch (e) {
         // 500
         res.writeHead(500, { 'Content-Type': 'text/plain' })
         res.end(e.message)
+        return
       }
       // 200
       res.writeHead(200, { 'Content-Type': contentType })
