@@ -13,7 +13,7 @@ module.exports = {
   ],
   html2VueRender: true,
   // 热更新
-  hot: 'reload',
+  hot: 'style',
   // static: ['./images'],
   rollupConfig: { // 打包时用到的 Rollup 配置，input 和 output 的 file 选项是无效的
     globals: {

@@ -29,9 +29,10 @@ const mime = {
   'xml': 'text/xml'
 }
 let fileChangeTime = 0
+let websocket = null
 
 // 监听文件变化
-function watchFiles (dir, ws) {
+function watchFiles (dir) {
   const w = fs.watch(dir, (event, filename) => {
     const p = path.resolve(dir, filename)
     if (event === 'rename') {
@@ -39,7 +40,7 @@ function watchFiles (dir, ws) {
         if (!err) {
           if (state.isDirectory()) {
             w.close()
-            watchFiles(p, ws)
+            watchFiles(p)
           }
         } else {
           w.close()
@@ -51,8 +52,8 @@ function watchFiles (dir, ws) {
         const now = Date.now()
         if (!err && state.isFile() && (now - fileChangeTime > 100)) {
           fileChangeTime = now
-          if (ws && ws.readyState === 1) {
-            ws.send(p.replace(cwd, '').replace(/\\/g, '/'))
+          if (websocket) {
+            websocket.send(p.replace(cwd, '').replace(/\\/g, '/'))
           }
         }
       })
@@ -67,7 +68,7 @@ function watchFiles (dir, ws) {
     fs.stat(p, (err, state) => {
       if (err) throw err
       if (state.isDirectory()) {
-        watchFiles(p, ws)
+        watchFiles(p)
       }
     })
   })
@@ -158,8 +159,9 @@ module.exports = function server (port, config) {
   // websocket hot
   if (config.hot) {
     const WS = new WebSocket.Server({ server })
+    watchFiles(cwd)
     WS.on('connection', function connection (ws) {
-      watchFiles(cwd, ws)
+      websocket = ws
     })
   }
 
