@@ -503,6 +503,15 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <h2>常见错误</h2>
 <ul>
 <li>
+<p>运行 <code>pr1 start</code> 出错</p>
+<blockquote>
+<p><code>Error: listen EADDRINUSE :::8686</code></p>
+<p><code>at Server.setupListenHandle [as _listen2] (net.js:1335:14)</code></p>
+<p><code>at listenInCluster (net.js:1383:12)</code></p>
+</blockquote>
+<p>8686 端口被占用，解决方案：指定端口运行或先关闭占用 8686 端口的程序</p>
+</li>
+<li>
 <p>运行 <code>pr1 build</code> 出错</p>
 <blockquote>
 <p><code>(node:20976) UnhandledPromiseRejectionWarning: Error: EBUSY: resource busy or locked, rmdir 'D:\xx\dist'</code></p>
@@ -511,6 +520,12 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 </li>
 </ul>
 <h2>更新日志</h2>
+<p>### (2019-05-02)</p>
+<ul>
+<li>v0.2.2 修复 v0.2.1 错误 npm 包</li>
+<li>v0.2.3 修复 没有默认 index.html 的问题</li>
+<li>v0.2.4 修复 hot reload 选项失效的问题</li>
+</ul>
 <p>### v0.2.1 (2019-04-30)</p>
 <ul>
 <li>添加支持 rollup 插件的 <code>resolveId</code> 方法</li>
