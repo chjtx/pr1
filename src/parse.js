@@ -8,7 +8,7 @@ function parseModule (txt, url) {
   if (/\bimport\b|\bexport\b/.test(txt)) {
     txt = switchExport(switchImport(txt, url), url)
     txt = txt.replace(/\bmodule\.exports\s+=/, 'module.exports.default =')
-    txt = `(async function (_import, module, exports) {${txt}})(pr1.import,(pr1.modules['${url}']={id:'${url}',exports:{}}),pr1.modules['${url}'].exports)`
+    txt = `(async function (_import, module, exports) {${txt}Object.freeze(exports)})(pr1.import,(pr1.modules['${url}']={id:'${url}',exports:{}}),pr1.modules['${url}'].exports)`
   }
   return txt
 }
