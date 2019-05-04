@@ -429,7 +429,7 @@ doSome(data => {
 
 ## 更新日志
 
-\### v0.2.6 (2019-05-xx)
+\### v0.2.6 (2019-05-04)
 
 - 默认 vue.min.js 改为体积更小的 vue.runtime.min.js
 - 修复 `export function abc` 开发阶段同文件其它函数访问不了 `abc()` 的问题
