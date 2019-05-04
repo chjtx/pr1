@@ -218,7 +218,7 @@ module.exports = {
   // vendor 子项的第一个值将会整合到 rollup 的 external
   // [0]是开发环境用的，[1]是生产环境用的，如果没有[1]生产环境也用[0]
   vendor: [
-    ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.min.js']
+    ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.runtime.min.js']
   ],
   // true 表示存在同级目录且同名的 html 和 js 文件会被关联到一起
   // 转成 Vue render 组件提高性能，仅生产环境起作用
@@ -291,13 +291,15 @@ import a, { efg as b, c } from './util.js'      => const { default: a, efg: b, c
 
 ```js
 // export 规则
- export var a = 'xxx'                           => exports['/xx.js'].a = 'xxx'
- export { a, b, c }                             => Object.assign(exports['/xx.js'], {a, b, c})
- export function a () {}                        => exports['/xx.js'].a = function a () {}
- export default a                               => exports['/xx.js'].default = a
- export { abc as a }                            => Object.assign(exports['/xx.js'], {a: abc} = { a })
- export class e {}                              => exports['/xx.js'].e = class e {}
- export { default as d } from './util.js'       => Object.assign(exports, await (async () => { const { default: d } await _import('./util.js'); return { d }})()
+ export var a = 'xxx'                           => exports.a = 'xxx';Object.defineProperty(exports, 'a', {
+                                                   enumerable:true,writable:false,configurable:false})
+ export { a, b, c }                             => Object.assign(exports, {a, b, c})
+ export function a () {}                        => exports.a = a; function a () {}
+ export default a                               => exports.default = a
+ export { abc as a }                            => Object.assign(exports, {a: abc} = { a })
+ export class e {}                              => exports.e = e; class e {}
+ export { default as d } from './util.js'       => Object.assign(exports, await (async () => { const { default: d
+                                                   } = await _import('./util.js'); return { d }})())
 ```
 
 ## 静态资源
@@ -426,6 +428,12 @@ doSome(data => {
   dist 目录繁忙或锁定，无法删除。解决方案：检查 dist/index.html 是否在浏览器中打开，将其关闭再重新打包
 
 ## 更新日志
+
+\### v0.2.6 (2019-05-xx)
+
+- 默认 vue.min.js 改为体积更小的 vue.runtime.min.js
+- 修复 `export function abc` 开发阶段同文件其它函数访问不了 `abc()` 的问题
+- 解除 Object.freeze 将整个 export 冻结，用 Object.defineProperty 处理局部常量
 
 \### (2019-05-02)
 

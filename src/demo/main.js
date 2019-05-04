@@ -1,4 +1,5 @@
-/* global pr1 */
+/* global */
+import html from './main.html'
 import a, { bb } from './a.js'
 import { b as abc, o as omg } from './b.js'
 import Vue from 'vue/dist/vue.esm.browser.js'
@@ -44,9 +45,5 @@ new Vue({
     'my-vue-component': d,
     'my-a': a
   },
-  template: `
-<div>
-  <my-vue-component />
-  <my-a />
-</div>`
+  template: html
 })

@@ -335,7 +335,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
   <span class="hljs-comment">// vendor 子项的第一个值将会整合到 rollup 的 external</span>
   <span class="hljs-comment">// [0]是开发环境用的，[1]是生产环境用的，如果没有[1]生产环境也用[0]</span>
   vendor: [
-    [<span class="hljs-string">'vue/dist/vue.esm.browser.js'</span>, <span class="hljs-string">'vue/dist/vue.min.js'</span>]
+    [<span class="hljs-string">'vue/dist/vue.esm.browser.js'</span>, <span class="hljs-string">'vue/dist/vue.runtime.min.js'</span>]
   ],
   <span class="hljs-comment">// true 表示存在同级目录且同名的 html 和 js 文件会被关联到一起</span>
   <span class="hljs-comment">// 转成 Vue render 组件提高性能，仅生产环境起作用</span>
@@ -399,13 +399,15 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <span class="hljs-keyword">import</span> a, { efg <span class="hljs-keyword">as</span> b, c } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>      =&gt; <span class="hljs-keyword">const</span> { <span class="hljs-attr">default</span>: a, <span class="hljs-attr">efg</span>: b, c } = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
 </code></pre>
 <pre class="hljs"><code><span class="hljs-comment">// export 规则</span>
- <span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> a = <span class="hljs-string">'xxx'</span>                           =&gt; exports[<span class="hljs-string">'/xx.js'</span>].a = <span class="hljs-string">'xxx'</span>
- <span class="hljs-keyword">export</span> { a, b, c }                             =&gt; <span class="hljs-built_in">Object</span>.assign(exports[<span class="hljs-string">'/xx.js'</span>], {a, b, c})
- <span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span> (<span class="hljs-params"></span>) </span>{}                        =&gt; exports[<span class="hljs-string">'/xx.js'</span>].a = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span> (<span class="hljs-params"></span>) </span>{}
- <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> a                               =&gt; exports[<span class="hljs-string">'/xx.js'</span>].default = a
- <span class="hljs-keyword">export</span> { abc <span class="hljs-keyword">as</span> a }                            =&gt; <span class="hljs-built_in">Object</span>.assign(exports[<span class="hljs-string">'/xx.js'</span>], {<span class="hljs-attr">a</span>: abc} = { a })
- <span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">e</span> </span>{}                              =&gt; exports[<span class="hljs-string">'/xx.js'</span>].e = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">e</span> </span>{}
- <span class="hljs-keyword">export</span> { <span class="hljs-keyword">default</span> <span class="hljs-keyword">as</span> d } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>       =&gt; <span class="hljs-built_in">Object</span>.assign(exports, <span class="hljs-keyword">await</span> (<span class="hljs-keyword">async</span> () =&gt; { <span class="hljs-keyword">const</span> { <span class="hljs-attr">default</span>: d } <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>); <span class="hljs-keyword">return</span> { d }})()
+ <span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> a = <span class="hljs-string">'xxx'</span>                           =&gt; exports.a = <span class="hljs-string">'xxx'</span>;<span class="hljs-built_in">Object</span>.defineProperty(exports, <span class="hljs-string">'a'</span>, {
+                                                   <span class="hljs-attr">enumerable</span>:<span class="hljs-literal">true</span>,<span class="hljs-attr">writable</span>:<span class="hljs-literal">false</span>,<span class="hljs-attr">configurable</span>:<span class="hljs-literal">false</span>})
+ <span class="hljs-keyword">export</span> { a, b, c }                             =&gt; <span class="hljs-built_in">Object</span>.assign(exports, {a, b, c})
+ <span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span> (<span class="hljs-params"></span>) </span>{}                        =&gt; exports.a = a; <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span> (<span class="hljs-params"></span>) </span>{}
+ <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> a                               =&gt; exports.default = a
+ <span class="hljs-keyword">export</span> { abc <span class="hljs-keyword">as</span> a }                            =&gt; <span class="hljs-built_in">Object</span>.assign(exports, {<span class="hljs-attr">a</span>: abc} = { a })
+ <span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">e</span> </span>{}                              =&gt; exports.e = e; <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">e</span> </span>{}
+ <span class="hljs-keyword">export</span> { <span class="hljs-keyword">default</span> <span class="hljs-keyword">as</span> d } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>       =&gt; <span class="hljs-built_in">Object</span>.assign(exports, <span class="hljs-keyword">await</span> (<span class="hljs-keyword">async</span> () =&gt; { <span class="hljs-keyword">const</span> { <span class="hljs-attr">default</span>: d
+                                                   } = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>); <span class="hljs-keyword">return</span> { d }})())
 </code></pre>
 <h2>静态资源</h2>
 <p>支持两种静态资源路径 以 <code>/</code> 开头和以 <code>.</code> 开头</p>
@@ -520,6 +522,12 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 </li>
 </ul>
 <h2>更新日志</h2>
+<p>### v0.2.6 (2019-05-xx)</p>
+<ul>
+<li>默认 vue.min.js 改为体积更小的 vue.runtime.min.js</li>
+<li>修复 <code>export function abc</code> 开发阶段同文件其它函数访问不了 <code>abc()</code> 的问题</li>
+<li>解除 Object.freeze 将整个 export 冻结，用 Object.defineProperty 处理局部常量</li>
+</ul>
 <p>### (2019-05-02)</p>
 <ul>
 <li>v0.2.2 修复 v0.2.1 错误 npm 包</li>

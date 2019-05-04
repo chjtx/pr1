@@ -8,7 +8,7 @@ function parseModule (txt, url) {
   if (/\bimport\b|\bexport\b/.test(txt)) {
     txt = switchExport(switchImport(txt, url), url)
     txt = txt.replace(/\bmodule\.exports\s+=/, 'module.exports.default =')
-    txt = `(async function (_import, module, exports) {${txt}Object.freeze(exports)})(pr1.import,(pr1.modules['${url}']={id:'${url}',exports:{}}),pr1.modules['${url}'].exports)`
+    txt = `(async function (_import, module, exports) {${txt}})(pr1.import,(pr1.modules['${url}']={id:'${url}',exports:{}}),pr1.modules['${url}'].exports)`
   }
   return txt
 }
@@ -109,13 +109,14 @@ function removeUnnecessary (rs) {
 }
 
 /* export 规则
-* 1) export var a = 'xxx'                     => exports.a = 'xxx'
+* 1) export var a = 'xxx'                     => exports.a = 'xxx';Object.defineProperty(exports, 'a', {
+      enumerable:true,writable:false,configurable:false})
 * 2) export { a, b, c }                       => Object.assign(exports, {a, b, c})
-* 3) export function a () {}                  => exports.a = function a () {}
+* 3) export function a () {}                  => exports.a = a; function a () {}
 * 4) export default a                         => exports.default = a
 * 5) export { abc as a }                      => Object.assign(exports, {a: abc} = { a })
-* 6) export class e {}                        => exports.e = class e {}
-* 7) export { default as d } from './util.js' => Object.assign(exports, await (async () => { const { default: d } await _import('./util.js'); return { d }})())
+* 6) export class e {}                        => exports.e = e; class e {}
+* 7) export { default as d } from './util.js' => Object.assign(exports, await (async () => { const { default: d } = await _import('./util.js'); return { d }})())
 */
 function parseExport (i, url) {
   let result = ''
@@ -134,7 +135,9 @@ function parseExport (i, url) {
   // 1)
   const reg1 = /^(var|let|const)\s+/
   if (reg1.test(variable)) {
-    result = `exports.${variable.replace(reg1, '')}`
+    let vari = variable.replace(reg1, '')
+    vari = vari.slice(0, vari.indexOf(' '))
+    result = `exports.${variable.replace(reg1, '')};Object.defineProperty(exports, '${vari}', {enumerable:true,writable:false,configurable:false})`
   }
   // 4)
   const reg2 = /^default\s+/
@@ -144,7 +147,9 @@ function parseExport (i, url) {
   // 3) 6)
   const reg3 = /^(function|class)\s+/
   if (reg3.test(variable)) {
-    result = `exports.${variable.replace(reg3, '').split(' ')[0]} = ${variable}`
+    let vari = variable.replace(reg3, '')
+    vari = vari.slice(0, vari.indexOf(' '))
+    result = `exports.${variable.replace(reg3, '').split(' ')[0]} = ${vari}; ${variable}`
   }
   // 2) 5)
   if (variable[0] === '{') {

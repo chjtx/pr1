@@ -8,7 +8,7 @@ const nodeResolve = require('rollup-plugin-node-resolve')
 
 module.exports = {
   vendor: [ // [0]是开发环境用的，[1]是生产环境用的，如果没有[1]生产环境也用[0]
-    ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.min.js'],
+    ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.runtime.min.js'],
     ['jroll/src/jroll.js', 'jroll/build/jroll.min.js']
   ],
   html2VueRender: true,
