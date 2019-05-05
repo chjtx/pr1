@@ -8,9 +8,18 @@ function parseModule (txt, url) {
   if (/\bimport\b|\bexport\b/.test(txt)) {
     txt = switchExport(switchImport(txt, url), url)
     txt = txt.replace(/\bmodule\.exports\s+=/, 'module.exports.default =')
-    txt = `(async function (_import, module, exports) {${txt}})(pr1.import,(pr1.modules['${url}']={id:'${url}',exports:{}}),pr1.modules['${url}'].exports)`
   }
-  return txt
+  return wrap(txt, url)
+}
+
+// 对于 html 这类资源只解释一次 export
+function parseOnceExport (txt, url) {
+  txt = txt.replace('export default', 'exports.default =')
+  return wrap(txt, url)
+}
+
+function wrap (txt, url) {
+  return `(async function (_import, module, exports) {${txt};Object.freeze(exports)})(pr1.import,(pr1.modules['${url}']={id:'${url}',exports:{}}),pr1.modules['${url}'].exports)`
 }
 
 function type1 (variable, filePath, url) {
@@ -109,8 +118,7 @@ function removeUnnecessary (rs) {
 }
 
 /* export 规则
-* 1) export var a = 'xxx'                     => exports.a = 'xxx';Object.defineProperty(exports, 'a', {
-      enumerable:true,writable:false,configurable:false})
+* 1) export var a = 'xxx'                     => exports.a = 'xxx'
 * 2) export { a, b, c }                       => Object.assign(exports, {a, b, c})
 * 3) export function a () {}                  => exports.a = a; function a () {}
 * 4) export default a                         => exports.default = a
@@ -135,9 +143,7 @@ function parseExport (i, url) {
   // 1)
   const reg1 = /^(var|let|const)\s+/
   if (reg1.test(variable)) {
-    let vari = variable.replace(reg1, '')
-    vari = vari.slice(0, vari.indexOf(' '))
-    result = `exports.${variable.replace(reg1, '')};Object.defineProperty(exports, '${vari}', {enumerable:true,writable:false,configurable:false})`
+    result = `exports.${variable.replace(reg1, '')}`
   }
   // 4)
   const reg2 = /^default\s+/
@@ -184,7 +190,7 @@ module.exports = {
     const id = path.resolve(cwd, '.' + url)
     // 执行rollup插件的transform
     if (config && config.rollupConfig && config.rollupConfig.plugins) {
-      code = await [...config.rollupConfig.plugins, ...pr1Plugins].reduce(async (code, plugin) => {
+      code = await [...pr1Plugins, ...config.rollupConfig.plugins].reduce(async (code, plugin) => {
         if (typeof plugin.transform === 'function') {
           const result = await plugin.transform(await code, id)
           if (result) {
@@ -194,6 +200,6 @@ module.exports = {
         return code
       }, code)
     }
-    return parseModule(code, url)
+    return /\.(vue|js)$/.test(url) ? parseModule(code, url) : parseOnceExport(code, url)
   }
 }

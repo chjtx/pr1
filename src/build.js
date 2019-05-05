@@ -13,7 +13,7 @@ async function bundle (input, out, config, outName) {
   const inputOptions = {
     input: input,
     external: (config.vendor || []).map(i => i[0]),
-    plugins: [...config.rollupConfig.plugins, ...pr1Plugins],
+    plugins: [...pr1Plugins, ...config.rollupConfig.plugins],
     context: 'window'
   }
   const outputOptions = {

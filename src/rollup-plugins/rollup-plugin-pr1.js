@@ -201,8 +201,8 @@ module.exports = function () {
         return [
           `pr1.injectStyle(${JSON.stringify(style)}, '${pathId}')`,
           isVue
-            ? `${script.replace('export default {', 'export default {\n  template:' + JSON.stringify(html) + ',')}`
-            : `export default ${JSON.stringify(html)}`
+            ? `${script.replace('export default {', 'export default {\n  template:`\n' + html + '`,')}`
+            : `export default \`\n${html}\``
         ].join('\n')
       } else {
         // 生产环境
