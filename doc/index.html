@@ -399,8 +399,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <span class="hljs-keyword">import</span> a, { efg <span class="hljs-keyword">as</span> b, c } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>      =&gt; <span class="hljs-keyword">const</span> { <span class="hljs-attr">default</span>: a, <span class="hljs-attr">efg</span>: b, c } = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
 </code></pre>
 <pre class="hljs"><code><span class="hljs-comment">// export 规则</span>
- <span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> a = <span class="hljs-string">'xxx'</span>                           =&gt; exports.a = <span class="hljs-string">'xxx'</span>;<span class="hljs-built_in">Object</span>.defineProperty(exports, <span class="hljs-string">'a'</span>, {
-                                                   <span class="hljs-attr">enumerable</span>:<span class="hljs-literal">true</span>,<span class="hljs-attr">writable</span>:<span class="hljs-literal">false</span>,<span class="hljs-attr">configurable</span>:<span class="hljs-literal">false</span>})
+ <span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> a = <span class="hljs-string">'xxx'</span>                           =&gt; exports.a = <span class="hljs-string">'xxx'</span>
  <span class="hljs-keyword">export</span> { a, b, c }                             =&gt; <span class="hljs-built_in">Object</span>.assign(exports, {a, b, c})
  <span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span> (<span class="hljs-params"></span>) </span>{}                        =&gt; exports.a = a; <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span> (<span class="hljs-params"></span>) </span>{}
  <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> a                               =&gt; exports.default = a
@@ -501,6 +500,24 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">v-for</span>=<span class="hljs-string">"i in images"</span> <span class="hljs-attr">:src</span>=<span class="hljs-string">"i.src"</span>&gt;</span>
 </code></pre>
 </li>
+<li>
+<p>js 文件或 vue 文件如果在行首要输入 <code>import xxx from</code> <code>export default</code> 这类字符串需要转义，或者使用字符串拼接不能让飘刃转换 import 和 export 的规则命中</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> str = <span class="hljs-string">`
+import xxx from 'a.js'
+export default { b: 1 }
+`</span>
+<span class="hljs-comment">// 要写成</span>
+<span class="hljs-keyword">const</span> str = <span class="hljs-string">`
+\u0069mport xxx from 'a.js'
+\u0065xport default { b: 1 }
+`</span>
+<span class="hljs-comment">// 或</span>
+<span class="hljs-keyword">const</span> str = <span class="hljs-string">`
+i`</span> + <span class="hljs-string">`mport xxx from 'a.js'
+e`</span> + <span class="hljs-string">`xport default { b: 1 }
+`</span>
+</code></pre>
+</li>
 </ul>
 <h2>常见错误</h2>
 <ul>
@@ -522,11 +539,18 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 </li>
 </ul>
 <h2>更新日志</h2>
+<p>### v0.2.7 (2019-05-06)</p>
+<ul>
+<li>改回使用 Object.freeze 冻结 exports</li>
+<li>html 输入使用 ` 反引符保持格式</li>
+<li>修复 html 文件里的 import 和 export 字符串也被转换的问题</li>
+<li>更新注意事项</li>
+</ul>
 <p>### v0.2.6 (2019-05-04)</p>
 <ul>
 <li>默认 vue.min.js 改为体积更小的 vue.runtime.min.js</li>
 <li>修复 <code>export function abc</code> 开发阶段同文件其它函数访问不了 <code>abc()</code> 的问题</li>
-<li>解除 Object.freeze 将整个 export 冻结，用 Object.defineProperty 处理局部常量</li>
+<li>解除 Object.freeze 将整个 exports 冻结，用 Object.defineProperty 处理局部常量</li>
 </ul>
 <p>### (2019-05-02)</p>
 <ul>
