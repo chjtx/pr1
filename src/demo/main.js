@@ -32,7 +32,10 @@ ddd()
 console.log('// pr1 ignore++')
 // pr1 ignore--
 
-omg('123orm')
+omg(`123orm
+\u0069mport a from
+\u0065xport default {
+`)
 
 var buffer = new ArrayBuffer(16)
 var view1 = new DataView(buffer)

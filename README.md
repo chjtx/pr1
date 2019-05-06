@@ -408,6 +408,24 @@ doSome(data => {
   ```html
   <img v-for="i in images" :src="i.src">
   ```
+- js 文件或 vue 文件如果在行首要输入 `import xxx from` `export default` 这类字符串需要转义，或者使用字符串拼接不能让飘刃转换 import 和 export 的规则命中
+
+  ```js
+  const str = `
+  import xxx from 'a.js'
+  export default { b: 1 }
+  `
+  // 要写成
+  const str = `
+  \u0069mport xxx from 'a.js'
+  \u0065xport default { b: 1 }
+  `
+  // 或
+  const str = `
+  i` + `mport xxx from 'a.js'
+  e` + `xport default { b: 1 }
+  `
+  ```
 
 ## 常见错误
 
@@ -428,11 +446,18 @@ doSome(data => {
 
 ## 更新日志
 
+\### v0.2.7 (2019-05-06)
+
+- 改回使用 Object.freeze 冻结 exports
+- html 输入使用 ` 反引符保持格式
+- 修复 html 文件里的 import 和 export 字符串也被转换的问题
+- 更新注意事项
+
 \### v0.2.6 (2019-05-04)
 
 - 默认 vue.min.js 改为体积更小的 vue.runtime.min.js
 - 修复 `export function abc` 开发阶段同文件其它函数访问不了 `abc()` 的问题
-- 解除 Object.freeze 将整个 export 冻结，用 Object.defineProperty 处理局部常量
+- 解除 Object.freeze 将整个 exports 冻结，用 Object.defineProperty 处理局部常量
 
 \### (2019-05-02)
 
