@@ -100,7 +100,7 @@ module.exports = function server (port, config) {
       let importer = parseURL.searchParams.get('importer')
       let filePath = ''
       let file = ''
-      filePath = importer ? path.resolve(cwd, path.dirname(importer), importee) : realPath
+      filePath = importer ? path.resolve(cwd, path.dirname('.' + importer), importee) : realPath
       // 若文件不存在，尝试使用 rollup 插件的 resolveId 解决
       if (!fs.existsSync(filePath)) {
         importer = path.resolve(cwd, '.' + importer)
