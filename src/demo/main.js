@@ -4,7 +4,7 @@ import a, { bb } from './a.js'
 import { b as abc, o as omg } from './b.js'
 import Vue from 'vue/dist/vue.esm.browser.js'
 import 'jroll/src/jroll.js'
-import d from './d.vue'
+import d from './d.vue';
 
 console.log(a)
 console.log(bb)

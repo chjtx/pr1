@@ -55,7 +55,7 @@ function parseImport (i, url) {
   let result = ''
   let [variable, filePath] = i.replace(/(\s+)?\bimport\b\s+/, '').split(/\bfrom\b/)
   if (!filePath) {
-    filePath = variable.trim()
+    filePath = variable.trim().replace(/;/g, '')
     // 4)
     return {
       expression: i,
@@ -63,7 +63,7 @@ function parseImport (i, url) {
     }
   } else {
     variable = variable.trim()
-    filePath = filePath.trim()
+    filePath = filePath.trim().replace(/;/g, '')
   }
 
   const leftIndex = variable.indexOf('{')
