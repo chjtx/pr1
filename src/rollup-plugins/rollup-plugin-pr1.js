@@ -201,7 +201,7 @@ module.exports = function () {
         return [
           `pr1.injectStyle(${JSON.stringify(style)}, '${pathId}')`,
           isVue
-            ? `${script.replace('export default {', 'export default {\n  template:`' + html + '`,')}`
+            ? `${script.replace(/export default([^{]+){/, (_, a) => 'export default' + a + '{\n  template:`' + html + '`,')}`
             : `export default \`${html}\``
         ].join('\n')
       } else {
@@ -223,7 +223,7 @@ module.exports = function () {
             optimizeSSR: false
           })
           return isVue
-            ? compiled.code + `\n${script.replace('export default {', 'export default {\n  render: render,\n  staticRenderFns: staticRenderFns,\n')}`
+            ? compiled.code + `\n${script.replace(/export default([^{]+){/, (_, a) => 'export default' + a + '{\n  render: render,\n  staticRenderFns: staticRenderFns,\n')}`
             : compiled.code + '\nexport default {render, staticRenderFns};'
         }
         return `export default ${JSON.stringify(html)}`

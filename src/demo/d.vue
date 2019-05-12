@@ -6,13 +6,14 @@ div
 </template>
 
 <script>
-export default {
+import Vue from 'vue/dist/vue.esm.browser.js'
+export default Vue.extend({
   data () {
     return {
       a: ''
     }
   }
-}
+})
 </script>
 
 
