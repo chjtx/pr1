@@ -102,7 +102,7 @@ module.exports = function server (port, config) {
     // 通过 cookie 获取来源去处
     const cookie = req.headers.cookie
     const cookieParams = {}
-    if (cookie.indexOf('pr1_module=1')) {
+    if (cookie && cookie.indexOf('pr1_module=1') > -1) {
       cookie.split(';').forEach(i => {
         i.split('&').forEach(b => {
           const c = b.split('=')
@@ -111,7 +111,7 @@ module.exports = function server (port, config) {
       })
     }
 
-    const isPr1Module = checkPr1Module(cookieParams, req.url)
+    const isPr1Module = cookie && checkPr1Module(cookieParams, req.url)
 
     // 飘刃模块
     if (req.url.indexOf('pr1_module=1') > -1 || isPr1Module) {

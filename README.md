@@ -450,6 +450,10 @@ doSome(data => {
 
 \### (2019-05-22)
 
+- v0.2.13
+
+  - 修复 cookie 为 undefined 时出错的 bug
+
 - v0.2.12
 
   - 使用 cookie 传参替换 url 传参，使文件路径清爽
