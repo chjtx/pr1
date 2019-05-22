@@ -22,4 +22,7 @@ $abc: #ff00ff;
 h3 {
   color: $abc;
 }
+h3::after {
+  content: 'h3::after';
+}
 </style>

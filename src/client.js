@@ -100,10 +100,13 @@
       })
     },
     injectStyle (css, pathId) {
-      const style = document.createElement('style')
-      style.setAttribute('pr1-path', pathId)
+      let style = document.querySelector(`[pr1-path='${pathId}']`)
+      if (!style) {
+        style = document.createElement('style')
+        style.setAttribute('pr1-path', pathId)
+        document.head.appendChild(style)
+      }
       style.innerHTML = css
-      document.head.appendChild(style)
     }
   }
 

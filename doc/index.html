@@ -429,6 +429,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
     |-- b.js
 </code></pre>
 <p>绝对路径和相对路径都是引用同一张图片</p>
+<p>支持组件多 style ，组件内 style 均为组件内样式，带 scoped 不会影响子组件，不带 scoped 会影响子组件，全局样式请用 link 标签引入</p>
 <h2>多页应用</h2>
 <p>飘刃处理多面应用非常简单，如下目录结构</p>
 <pre class="hljs"><code>src/
@@ -539,6 +540,16 @@ e`</span> + <span class="hljs-string">`xport default { b: 1 }
 </li>
 </ul>
 <h2>更新日志</h2>
+<p>### v0.2.11 (2019-05-22)</p>
+<ul>
+<li>修复样式对 :: 伪元素的支持</li>
+<li>支持组件多 style ，组件内 style 均为组件内样式，带 scoped 不会影响子组件，不带 scoped 会影响子组件，全局样式请用 link 标签引入</li>
+<li>优化 <code>hot: 'style'</code> 选项</li>
+</ul>
+<p>### v0.2.10 (2019-05-12)</p>
+<ul>
+<li>支持 .vue 文件的 <code>export default Vue.extend({</code> 等语法</li>
+</ul>
 <p>### v0.2.9 (2019-05-08)</p>
 <ul>
 <li>修复 import 语句后面带 ; 号解释出错的问题</li>

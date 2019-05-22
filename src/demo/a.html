@@ -1,16 +1,21 @@
 <style>
-.div {
+this {
   font-size: 20px;
-  background-image: url(./images/2.png);
+  /* background-image: url(./images/2.png); */
 }
-.div .bbb {
-  color: yellow;
+this .bbb {
+  color: blue;
 }
 .abc {
   color: red;
 }
 .a:hover {
   color: aqua;
+}
+</style>
+<style scoped>
+a {
+  color: blueviolet;
 }
 </style>
 <div class="div" :class="{ abc: true }">

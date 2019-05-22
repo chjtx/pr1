@@ -1,6 +1,6 @@
 {
   "name": "piaoren",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "which front-end engineering build tools for Vue project",
   "main": "index.js",
   "scripts": {
