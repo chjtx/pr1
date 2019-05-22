@@ -141,27 +141,6 @@ module.exports = function () {
       const pathId = id.replace(cwd, '').replace(/\\/g, '/')
 
       // 分离style和html
-      // const regResult = /<style( lang="sass")?( scoped)?>([\s\S]*?)<\/style>/g.exec(code)
-      // let style = ''
-      // let html = ''
-
-      // if (regResult) {
-      //   style = regResult[3].trim()
-      //   html = code.replace(regResult[0], '').trim()
-      //   if (regResult[1]) {
-      //     // sass
-      //     style = sass.renderSync({
-      //       data: style,
-      //       includePaths: [path.dirname(id)]
-      //     }).css.toString()
-      //   }
-      //   if (regResult[2]) {
-      //     isScoped = true
-      //   }
-      // } else {
-      //   html = code
-      // }
-
       const reg = /<style( lang="sass")?( scoped)?>([\s\S]*?)<\/style>/g
       let regResult = null
       let style = []
@@ -176,9 +155,6 @@ module.exports = function () {
             includePaths: [path.dirname(id)]
           }).css.toString()
         }
-        // if (regResult[2]) {
-        //   isScoped = true
-        // }
         style.push({
           css: singleCss,
           scoped: regResult[2]
@@ -201,15 +177,7 @@ module.exports = function () {
         scope = 'x' + count
         cacheScope[pathId] = scope
       }
-      // if (isScoped) {
-      //   style = style.replace(/([#a-zA-Z-_.@][^{}]+)\{/g, function (match, selector) {
-      //     if (selector.trim() === 'from' || selector.trim() === 'to' || /^@/.test(selector)) {
-      //       return match
-      //     } else {
-      //       return selector.trim().split(',').map(i => addStyleScope(i, scope)).join(', ') + ' {'
-      //     }
-      //   })
-      // }
+
       style.forEach(s => {
         s.css = s.css.trim()
           // 去掉注释
@@ -260,11 +228,6 @@ module.exports = function () {
         }
       })
 
-      // html添加作用域
-      // if (isScoped && style) {
-      //   html = html.replace(/(<[^>]+)(\/?)>/gm, (match, start) => addHTMLScope(match, start, scope))
-      // }
-
       if (process.env.NODE_ENV === 'development') {
         // 开发环境
         // 给第一个dom注入pathId
@@ -280,14 +243,12 @@ module.exports = function () {
       } else {
         // 生产环境
         // 查找 style 和 html 里的静态资源
-        // style = findStatic(style, 'url', id)
         style.forEach(s => {
           s.css = findStatic(s.css, 'url', id)
         })
         html = findStatic(html, 'src', id)
         // 缓存css
-        // css.push(style)
-        css.concat(...style.map(i => i.css))
+        css = css.concat(style.map(i => i.css))
         // html转成render函数
         if ((process.env.PR1_CONFIG_HTML_2_VUE_RENDER && fs.existsSync(id.replace(/\.html$/, '.js'))) || isVue) {
           const compiled = compileTemplate({

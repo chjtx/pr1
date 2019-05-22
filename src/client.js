@@ -84,9 +84,8 @@
       }
 
       return new Promise(resolve => {
-        let src = ''
-        src = uniquePath + (uniquePath.indexOf('?') === -1 ? '?' : '&') +
-          `pr1_module=1&importee=${path}&importer=${parentPath}`
+        const src = uniquePath
+        document.cookie = `pr1_module=1&importee=${path}&importer=${parentPath}`
         cache[uniquePath].resolve = (rs) => {
           resolve(rs && rs.exports)
           setTimeout(() => {

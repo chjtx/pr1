@@ -74,6 +74,11 @@ function watchFiles (dir) {
   })
 }
 
+// 两路径相对表示是 pr1Module
+function checkPr1Module (params, url) {
+  return params.pr1_module === '1' && path.resolve(cwd, '.' + url) === path.resolve(path.dirname(path.resolve(cwd, '.' + params.importer)), params.importee)
+}
+
 // 浏览器端所需文件
 const client = fs.readFileSync(path.resolve(__dirname, './client.js')).toString()
 
@@ -94,10 +99,24 @@ module.exports = function server (port, config) {
     }
     const realPath = path.resolve(cwd, '.' + pathname)
 
+    // 通过 cookie 获取来源去处
+    const cookie = req.headers.cookie
+    const cookieParams = {}
+    if (cookie.indexOf('pr1_module=1')) {
+      cookie.split(';').forEach(i => {
+        i.split('&').forEach(b => {
+          const c = b.split('=')
+          cookieParams[(c[0] || '').trim()] = (c[1] || '').trim()
+        })
+      })
+    }
+
+    const isPr1Module = checkPr1Module(cookieParams, req.url)
+
     // 飘刃模块
-    if (req.url.indexOf('pr1_module=1') > -1) {
-      const importee = parseURL.searchParams.get('importee')
-      let importer = parseURL.searchParams.get('importer')
+    if (req.url.indexOf('pr1_module=1') > -1 || isPr1Module) {
+      const importee = isPr1Module ? cookieParams['importee'] : null
+      let importer = isPr1Module ? cookieParams['importer'] : null
       let filePath = ''
       let file = ''
       filePath = importer ? path.resolve(cwd, path.dirname('.' + importer), importee) : realPath
