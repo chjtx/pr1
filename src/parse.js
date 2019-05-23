@@ -1,4 +1,6 @@
+const fs = require('fs')
 const path = require('path')
+const { appRootPath } = require('./tools.js')
 const vueComponent = require('./rollup-plugins/rollup-plugin-pr1.js')
 const cwd = process.cwd()
 
@@ -201,5 +203,12 @@ module.exports = {
       }, code)
     }
     return /\.(vue|js)$/.test(url) ? parseModule(code, url) : parseOnceExport(code, url)
+  },
+  parseNode (url) {
+    const p = path.resolve(appRootPath, 'node_modules', url)
+    if (fs.existsSync(p)) {
+      return parseModule(fs.readFileSync(p).toString(), url)
+    }
+    return false
   }
 }

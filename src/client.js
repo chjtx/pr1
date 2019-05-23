@@ -1,5 +1,7 @@
 (function (win) {
-  const cache = {}
+  const cache = Object.create(null)
+  const vueMap = Object.create(null)
+  let isNodeModule = false
 
   function dirname (p) {
     return p.slice(0, p.lastIndexOf('/'))
@@ -10,10 +12,17 @@
 
     // 支持http/https请求
     if (/^http/.test(currentPath)) {
+      isNodeModule = false
+      return currentPath
+
+    // node_modules 路径
+    } else if (currentPath.indexOf('.') !== 0) {
+      isNodeModule = true
       return currentPath
 
     // 相对路径请求
     } else {
+      isNodeModule = false
       currentPath = currentPath.replace(/(\.\.\/)|(\.\/)/g, function (match, up) {
         if (up) {
           dir = dir.substr(0, dir.lastIndexOf('/'))
@@ -27,8 +36,9 @@
 
   // 加截javascript
   function loadScript (src, parentPath, uniquePath) {
+    const oldScript = document.querySelector(`[src="${src}"]`)
     const script = document.createElement('script')
-    script.src = src
+    script.src = src + (isNodeModule ? '?pr1_node=1' : '')
     script.onload = function () {
       if (cache[uniquePath].depend === 0) {
         cache[uniquePath].resolve(pr1.modules[uniquePath])
@@ -37,7 +47,34 @@
     script.onerror = function () {
       console.error(`Has error on [${parentPath}]. Load [${uniquePath}] fail.`)
     }
-    document.head.appendChild(script)
+    if (oldScript) {
+      document.head.replaceChild(script, oldScript)
+    } else {
+      document.head.appendChild(script)
+    }
+  }
+
+  // 格式 Vue 组件名称
+  function formatComponentName (name) {
+    return 'PR1' + name.replace(/\//g, '-').replace(/\./g, '_')
+  }
+
+  // 强制刷新 Vue 组件
+  function forceUpdate (arr, options) {
+    const oldCtor = arr[0].constructor
+    const newCtor = oldCtor.super.extend(options)
+
+    oldCtor.options = newCtor.options
+    oldCtor.cid = newCtor.cid
+    oldCtor.prototype = newCtor.prototype
+
+    arr.slice().forEach(instance => {
+      if (instance.$vnode && instance.$vnode.context) {
+        instance.$vnode.context.$forceUpdate()
+      } else {
+        window.location.reload()
+      }
+    })
   }
 
   // pr1
@@ -86,12 +123,27 @@
       return new Promise(resolve => {
         const src = uniquePath
         document.cookie = `pr1_module=1&importee=${path}&importer=${parentPath}`
-        cache[uniquePath].resolve = (rs) => {
+        cache[uniquePath].resolve = async (rs) => {
+          // vue 组件添加名称
+          if (rs && rs.exports && rs.exports.default && rs.exports.default.template) {
+            const comName = formatComponentName(uniquePath)
+            rs.exports.default.name = comName
+
+            if (noCache) {
+              // 热加载，替换 vue 组件
+              if (vueMap[comName]) {
+                forceUpdate(vueMap[comName], rs.exports.default)
+              }
+            }
+          }
+
           resolve(rs && rs.exports)
           setTimeout(() => {
-            cache[uniquePath].parent.depend--
-            if (cache[uniquePath].parent.depend === 0 && cache[uniquePath].parent.resolve) {
-              cache[uniquePath].parent.resolve(pr1.modules[cache[uniquePath].parent.src])
+            if (cache[uniquePath].parent) {
+              cache[uniquePath].parent.depend--
+              if (cache[uniquePath].parent.depend === 0 && cache[uniquePath].parent.resolve) {
+                cache[uniquePath].parent.resolve(pr1.modules[cache[uniquePath].parent.src])
+              }
             }
           }, 0)
         }
@@ -111,13 +163,34 @@
 
   // hot
   if (`{{configHot}}`) {
+    // vue beforeCreate
+    pr1.import('vue/dist/vue.esm.browser.js', '/').then(data => {
+      const Vue = data.default
+      Vue.mixin({
+        beforeCreate () {
+          if (this.$vnode) {
+            const tag = this.$vnode.tag.slice(this.$vnode.tag.indexOf('PR1'))
+            if (!vueMap[tag]) {
+              vueMap[tag] = []
+            }
+            vueMap[tag].push(this)
+          }
+        }
+      })
+    })
+
+    // ws
     const ws = new win.WebSocket('ws://localhost:{{port}}')
     ws.onmessage = function (evt) {
       if (pr1.modules[evt.data]) {
-        if (`{{hot}}` === 'style') {
-          pr1.import(cache[evt.data].origin, cache[evt.data].parent.src, true)
-        } else {
+        if (`{{hot}}` === 'reload') {
           win.document.location.reload()
+        } else {
+          if (cache[evt.data].origin) {
+            pr1.import(cache[evt.data].origin, cache[evt.data].parent.src, true)
+          } else {
+            pr1.import('.' + cache[evt.data].src, '/index.html', true)
+          }
         }
       }
     }

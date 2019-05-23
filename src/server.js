@@ -3,7 +3,7 @@ const path = require('path')
 const { URL } = require('url')
 const fs = require('fs')
 const WebSocket = require('ws')
-const { parsePr1 } = require('./parse.js')
+const { parsePr1, parseNode } = require('./parse.js')
 
 require('colors')
 
@@ -76,7 +76,7 @@ function watchFiles (dir) {
 
 // 两路径相对表示是 pr1Module
 function checkPr1Module (params, url) {
-  return params.pr1_module === '1' && path.resolve(cwd, '.' + url) === path.resolve(path.dirname(path.resolve(cwd, '.' + params.importer)), params.importee)
+  return params.pr1_module === '1' && path.resolve(cwd, '.' + url) === path.resolve(path.dirname(path.resolve(cwd, '.' + (params.importer || ''))), (params.importee || ''))
 }
 
 // 浏览器端所需文件
@@ -111,6 +111,16 @@ module.exports = function server (port, config) {
       })
     }
 
+    // node_modules 模块
+    if (req.url.indexOf('pr1_node=1') > -1) {
+      const txt = parseNode(cookieParams.importee)
+      if (txt) {
+        res.writeHead(200)
+        res.end(txt)
+        return
+      }
+    }
+
     const isPr1Module = cookie && checkPr1Module(cookieParams, req.url)
 
     // 飘刃模块
@@ -120,6 +130,7 @@ module.exports = function server (port, config) {
       let filePath = ''
       let file = ''
       filePath = importer ? path.resolve(cwd, path.dirname('.' + importer), importee) : realPath
+
       // 若文件不存在，尝试使用 rollup 插件的 resolveId 解决
       if (!fs.existsSync(filePath)) {
         importer = path.resolve(cwd, '.' + importer)
@@ -158,6 +169,7 @@ module.exports = function server (port, config) {
         return
       }
       // 200
+      res.setHeader('Set-Cookie', ['pr1_module=1'])
       res.writeHead(200, { 'Content-Type': contentType })
       if (contentType === 'text/html') {
         // 普通html文件
