@@ -125,7 +125,7 @@
 </tr>
 <tr>
 <td style="text-align:center">安装时间</td>
-<td style="text-align:left">18s</td>
+<td style="text-align:left">38s</td>
 <td style="text-align:left">1m 42s</td>
 </tr>
 <tr>
@@ -340,8 +340,8 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
   <span class="hljs-comment">// true 表示存在同级目录且同名的 html 和 js 文件会被关联到一起</span>
   <span class="hljs-comment">// 转成 Vue render 组件提高性能，仅生产环境起作用</span>
   html2VueRender: <span class="hljs-literal">true</span>,
-  <span class="hljs-comment">// 热更新 style or reload</span>
-  hot: <span class="hljs-string">'style'</span>,
+  <span class="hljs-comment">// 热更新 true or reload，如果是字符串 reload，将会刷新浏览器而非 .vue 组件</span>
+  hot: <span class="hljs-literal">true</span>,
   <span class="hljs-comment">// dist 打包后文件输出目录，路径应相对于当前配置文件</span>
   dist: <span class="hljs-string">''</span>,
   <span class="hljs-comment">// static 静态文件，路径应相对于 html 入口文件</span>
@@ -540,6 +540,13 @@ e`</span> + <span class="hljs-string">`xport default { b: 1 }
 </li>
 </ul>
 <h2>更新日志</h2>
+<p>### v0.3.0 (2019-05-23)</p>
+<ul>
+<li>支持 .vue 组件的热加载</li>
+<li>删除 hot 选项的 'style' ，改为 true</li>
+<li>修复改为 cookie 带参后首次加载会白屏的问题</li>
+<li>修复引入相同路径的 node_modules 资源产生两个不同资源的 bug</li>
+</ul>
 <p>### (2019-05-22)</p>
 <ul>
 <li>

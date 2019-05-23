@@ -24,7 +24,7 @@ __对比环境__ 华为荣耀 MagicBook Windows 10 家庭版 i5 8G 64位 联通4
 | 工具版本 | piaoren@0.1.1 | @vue/cli@3.6.3 |
 | 依赖包数 | 487 | 689 |
 | 安装命令 | npm i -g piaoren | npm i -g @vue/cli |
-| 安装时间 | 18s | 1m 42s |
+| 安装时间 | 38s | 1m 42s |
 | 支持编码 | Pug Sass ES6+ | Pug Sass Less Stylus ES6+ TypeScript |
 | 创建项目 | pr1 init 只需要填项目名称 | vue create/vue init 需要填选多项 |
 | 启动命令 | pr1 start | vue serve |
@@ -223,8 +223,8 @@ module.exports = {
   // true 表示存在同级目录且同名的 html 和 js 文件会被关联到一起
   // 转成 Vue render 组件提高性能，仅生产环境起作用
   html2VueRender: true,
-  // 热更新 style or reload
-  hot: 'style',
+  // 热更新 true or reload，如果是字符串 reload，将会刷新浏览器而非 .vue 组件
+  hot: true,
   // dist 打包后文件输出目录，路径应相对于当前配置文件
   dist: '',
   // static 静态文件，路径应相对于 html 入口文件
@@ -451,6 +451,7 @@ doSome(data => {
 \### v0.3.0 (2019-05-23)
 
 - 支持 .vue 组件的热加载
+- 删除 hot 选项的 'style' ，改为 true
 - 修复改为 cookie 带参后首次加载会白屏的问题
 - 修复引入相同路径的 node_modules 资源产生两个不同资源的 bug
 
