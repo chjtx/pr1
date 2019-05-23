@@ -125,7 +125,8 @@
         document.cookie = `pr1_module=1&importee=${path}&importer=${parentPath}`
         cache[uniquePath].resolve = async (rs) => {
           // vue 组件添加名称
-          if (rs && rs.exports && rs.exports.default && rs.exports.default.template) {
+          if (`{{configHot}}` &&
+            (/\.vue$/.test(uniquePath) || (/\.js$/.test(uniquePath) && cache[uniquePath.replace(/\.js$/, '.html')]))) {
             const comName = formatComponentName(uniquePath)
             rs.exports.default.name = comName
 

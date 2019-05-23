@@ -87,7 +87,7 @@ module.exports = function server (port, config) {
     // pr1-client.js
     if (req.url === '/pr1-client.js') {
       res.end(client.replace('{{port}}', port)
-        .replace('`{{configHot}}`', !!config.hot)
+        .replace(/`\{\{configHot\}\}`/g, !!config.hot)
         .replace('`{{hot}}`', `'${config.hot}'`))
       return
     }
@@ -104,10 +104,13 @@ module.exports = function server (port, config) {
     const cookieParams = {}
     if (cookie && cookie.indexOf('pr1_module=1') > -1) {
       cookie.split(';').forEach(i => {
-        i.split('&').forEach(b => {
-          const c = b.split('=')
-          cookieParams[(c[0] || '').trim()] = (c[1] || '').trim()
-        })
+        const importee = /importee=([^&]+)/.exec(i)
+        if (importee && req.url.indexOf(importee[1].slice(2)) > -1) {
+          i.split('&').forEach(b => {
+            const c = b.split('=')
+            cookieParams[(c[0] || '').trim()] = (c[1] || '').trim()
+          })
+        }
       })
     }
 
