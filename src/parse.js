@@ -187,28 +187,29 @@ function switchExport (txt, url) {
   return txt
 }
 
-module.exports = {
-  parsePr1: async function (code, url, config) {
-    const id = path.resolve(cwd, '.' + url)
-    // 执行rollup插件的transform
-    if (config && config.rollupConfig && config.rollupConfig.plugins) {
-      code = await [...pr1Plugins, ...config.rollupConfig.plugins].reduce(async (code, plugin) => {
-        if (typeof plugin.transform === 'function') {
-          const result = await plugin.transform(await code, id)
-          if (result) {
-            return result.code ? result.code : result
-          }
+async function parsePr1 (code, url, config) {
+  const id = path.resolve(cwd, (url.indexOf('/') === 0 ? '.' + url : url))
+  // 执行rollup插件的transform
+  if (config && config.rollupConfig && config.rollupConfig.plugins) {
+    code = await [...pr1Plugins, ...config.rollupConfig.plugins].reduce(async (code, plugin) => {
+      if (typeof plugin.transform === 'function') {
+        const result = await plugin.transform(await code, id)
+        if (result) {
+          return result.code ? result.code : result
         }
-        return code
-      }, code)
-    }
-    return /\.(vue|js)$/.test(url) ? parseModule(code, url) : parseOnceExport(code, url)
-  },
-  parseNode (url) {
-    const p = path.resolve(appRootPath, 'node_modules', url)
-    if (fs.existsSync(p)) {
-      return parseModule(fs.readFileSync(p).toString(), url)
-    }
-    return false
+      }
+      return code
+    }, code)
   }
+  return /\.(vue|js)$/.test(url) ? parseModule(code, url) : parseOnceExport(code, url)
 }
+
+async function parseNode (url, config) {
+  const p = path.resolve(appRootPath, 'node_modules', url)
+  if (fs.existsSync(p)) {
+    return parsePr1(fs.readFileSync(p).toString(), url, config)
+  }
+  return false
+}
+
+module.exports = { parsePr1, parseNode }

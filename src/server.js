@@ -116,7 +116,7 @@ module.exports = function server (port, config) {
 
     // node_modules 模块
     if (req.url.indexOf('pr1_node=1') > -1) {
-      const txt = parseNode(cookieParams.importee)
+      const txt = await parseNode(cookieParams.importee, config)
       if (txt) {
         res.writeHead(200)
         res.end(txt)

@@ -3,6 +3,7 @@ import html from './a.html'
 import a1 from './a1.html'
 import * as c from './c.js'
 import './a.sass'
+import './a.css'
 
 console.log(c)
 
