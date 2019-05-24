@@ -150,8 +150,8 @@ module.exports = function server (port, config) {
         res.writeHead(200)
         res.end(await parsePr1(file.toString(), pathname, config))
       } catch (e) {
-        res.writeHead(500)
-        res.end(e.message)
+        res.writeHead(500, e.message, { 'Content-Type': 'text/plain' })
+        res.end()
       }
       return
     }
@@ -167,8 +167,8 @@ module.exports = function server (port, config) {
         file = fs.readFileSync(realPath)
       } catch (e) {
         // 500
-        res.writeHead(500, { 'Content-Type': 'text/plain' })
-        res.end(e.message)
+        res.writeHead(500, e.message, { 'Content-Type': 'text/plain' })
+        res.end()
         return
       }
       // 200

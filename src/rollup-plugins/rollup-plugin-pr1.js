@@ -108,8 +108,23 @@ function resolveStatic (urls, id) {
   return replaceArray
 }
 
+function returnJS (code, id) {
+  // 替换 process.env.NODE_ENV
+  code = code.replace(/\bprocess\.env\.NODE_ENV\b/g, `'${process.env.NODE_ENV}'`)
+  // 生产环境
+  if (process.env.NODE_ENV === 'production') {
+    // 删除 pr1 ignore
+    code = code.replace(/\/\/ pr1 ignore\+\+([\s\S]+)?\/\/ pr1 ignore--/g, '')
+    // 转为render函数
+    if (process.env.PR1_CONFIG_HTML_2_VUE_RENDER && fs.existsSync(id.replace(/\.js$/, '.html'))) {
+      code = code.replace(/template: html/, 'render: html.render,\nstaticRenderFns: html.staticRenderFns')
+    }
+  }
+  return code
+}
+
 module.exports = function () {
-  const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.vue'])
+  const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.vue', '/**/*.sass', '/**/*.css'])
   let css = []
   let count = 0
   const cacheScope = {}
@@ -120,30 +135,49 @@ module.exports = function () {
       if (!filter(id)) {
         return
       }
-      if (/\.js$/.test(id)) {
-        // 替换 process.env.NODE_ENV
-        code = code.replace(/\bprocess\.env\.NODE_ENV\b/g, `'${process.env.NODE_ENV}'`)
-        // 生产环境
-        if (process.env.NODE_ENV === 'production') {
-          // 删除 pr1 ignore
-          code = code.replace(/\/\/ pr1 ignore\+\+([\s\S]+)?\/\/ pr1 ignore--/g, '')
-          // 转为render函数
-          if (process.env.PR1_CONFIG_HTML_2_VUE_RENDER && fs.existsSync(id.replace(/\.js$/, '.html'))) {
-            code = code.replace(/template: html/, 'render: html.render,\nstaticRenderFns: html.staticRenderFns')
-          }
-        }
-        return code
+
+      const isJs = /\.js$/.test(id) // .js 文件
+      const isVue = /\.vue$/.test(id) // .vue 文件
+      const isHtml = /\.html$/.test(id) // .vue 文件
+      const isCss = /\.css$/.test(id) // .css 文件
+      const isSass = /\.sass$/.test(id) // .sass 文件
+      const pathId = id.replace(cwd, '').replace(/\\/g, '/')
+      const style = []
+      let script = ''
+
+      if (isJs) {
+        return returnJS(code, id)
       }
 
-      const isVue = /\.vue$/.test(id) // .vue文件
-      // let isScoped = false
-      let script = ''
-      const pathId = id.replace(cwd, '').replace(/\\/g, '/')
+      if (isCss) {
+        if (process.env.NODE_ENV === 'development') {
+          return `pr1.injectStyle(${JSON.stringify(code)}, '${pathId}')`
+        } else {
+          style.push({
+            css: code,
+            scoped: false
+          })
+        }
+      }
+
+      if (isSass) {
+        const _css = sass.renderSync({
+          data: code,
+          includePaths: [path.dirname(id)]
+        }).css.toString()
+        if (process.env.NODE_ENV === 'development') {
+          return `pr1.injectStyle(${JSON.stringify(_css)}, '${pathId}')`
+        } else {
+          style.push({
+            css: _css,
+            scoped: false
+          })
+        }
+      }
 
       // 分离style和html
       const reg = /<style( lang="sass")?( scoped)?>([\s\S]*?)<\/style>/g
       let regResult = null
-      let style = []
       let html = code
       while ((regResult = reg.exec(code))) {
         let singleCss = regResult[3].trim()
@@ -161,7 +195,7 @@ module.exports = function () {
         })
       }
 
-      if (!html) {
+      if (isVue && !html) {
         return
       }
       if (isVue) {
@@ -197,7 +231,7 @@ module.exports = function () {
 
           // html添加作用域
           html = html.replace(/(<[^>]+)(\/?)>/gm, (match, start) => addHTMLScope(match, start, scope))
-        } else {
+        } else if (isHtml || isVue) {
           // noscoped
           const tag = scope.replace('x', 'y')
           s.css = s.css
