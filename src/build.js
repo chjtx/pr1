@@ -86,8 +86,7 @@ async function compileHTML (config, originIndexPath, targetIndexPath) {
   })
 
   // 入口js
-  const index = fs.readFileSync(originIndexPath)
-  const main = /src="([^"]+)\?pr1_module=1"/.exec(index)[1]
+  const main = 'main.js'
 
   // 拷贝静态文件
   if (config.static) {
@@ -101,7 +100,7 @@ async function compileHTML (config, originIndexPath, targetIndexPath) {
   const out = path.resolve(distDir, main)
   const code = await bundle(input, out, config)
 
-  let indexHtml = fs.readFileSync(targetIndexPath).toString()
+  let indexHtml = fs.readFileSync(targetIndexPath).toString().replace('</body>', '  <script src="./main.js?pr1_module=1"></script>\n</body>')
 
   // 如果存在 bable 的 regeneratorRuntime，自动加入 profill
   if (/\bregeneratorRuntime\b/.test(code)) {

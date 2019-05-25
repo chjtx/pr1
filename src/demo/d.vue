@@ -1,8 +1,8 @@
 <template lang="pug">
 div
   input(v-model="a")
-  h3 pug-h3
-    span {{ a }} 湎顶替
+  h3 pug-h323
+    span {{ a }} 湎顶替333w
 </template>
 
 <script>

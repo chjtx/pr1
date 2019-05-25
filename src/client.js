@@ -16,7 +16,7 @@
       return currentPath
 
     // node_modules 路径
-    } else if (currentPath.indexOf('.') !== 0) {
+    } else if (currentPath[0] !== '.' && currentPath[0] !== '/') {
       isNodeModule = true
       return currentPath
 
@@ -127,8 +127,16 @@
           // vue 组件添加名称
           if (`{{configHot}}` &&
             (/\.vue$/.test(uniquePath) || (/\.js$/.test(uniquePath) && cache[uniquePath.replace(/\.js$/, '.html')]))) {
-            const comName = formatComponentName(uniquePath)
-            rs.exports.default.name = comName
+            let comName = ''
+            if (rs.exports.default) {
+              if (typeof rs.exports.default === 'function') {
+                comName = rs.exports.default.options.name || formatComponentName(uniquePath)
+                rs.exports.default.options.name = comName
+              } else {
+                comName = rs.exports.default.name || formatComponentName(uniquePath)
+                rs.exports.default.name = comName
+              }
+            }
 
             if (noCache) {
               // 热加载，替换 vue 组件
@@ -165,12 +173,12 @@
   // hot
   if (`{{configHot}}`) {
     // vue beforeCreate
-    pr1.import('vue/dist/vue.esm.browser.js', '/').then(data => {
+    pr1.import('vue/dist/vue.esm.browser.js', '/index.html').then(data => {
       const Vue = data.default
       Vue.mixin({
         beforeCreate () {
           if (this.$vnode) {
-            const tag = this.$vnode.tag.slice(this.$vnode.tag.indexOf('PR1'))
+            const tag = this.$vnode.tag.replace(/vue-component-\d+-/, '')
             if (!vueMap[tag]) {
               vueMap[tag] = []
             }
@@ -178,6 +186,7 @@
           }
         }
       })
+      pr1.import('./main.js?pr1_module=1', document.URL)
     })
 
     // ws
@@ -190,11 +199,13 @@
           if (cache[evt.data].origin) {
             pr1.import(cache[evt.data].origin, cache[evt.data].parent.src, true)
           } else {
-            pr1.import('.' + cache[evt.data].src, '/index.html', true)
+            pr1.import('.' + cache[evt.data].src, document.URL, true)
           }
         }
       }
     }
+  } else {
+    pr1.import('./main.js?pr1_module=1', document.URL)
   }
 
   win.pr1 = pr1
