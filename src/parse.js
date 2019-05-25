@@ -132,7 +132,7 @@ function parseExport (i, url) {
   let result = ''
   let variable = i.replace(/(\s+)?\bexport\b\s+/, '')
 
-  variable = variable.trim()
+  variable = variable.trim().replace(/;/g, '')
 
   // 7)
   if (/\bfrom\b/.test(variable)) {
