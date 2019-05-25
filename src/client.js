@@ -2,6 +2,7 @@
   const cache = Object.create(null)
   const vueMap = Object.create(null)
   let isNodeModule = false
+  let isHotUpdate = false
 
   function dirname (p) {
     return p.slice(0, p.lastIndexOf('/'))
@@ -177,7 +178,7 @@
       const Vue = data.default
       Vue.mixin({
         beforeCreate () {
-          if (this.$vnode) {
+          if (this.$vnode && !isHotUpdate) {
             const tag = this.$vnode.tag.replace(/vue-component-\d+-/, '')
             if (!vueMap[tag]) {
               vueMap[tag] = []
@@ -192,6 +193,7 @@
     // ws
     const ws = new win.WebSocket('ws://localhost:{{port}}')
     ws.onmessage = function (evt) {
+      isHotUpdate = true
       if (pr1.modules[evt.data]) {
         if (`{{hot}}` === 'reload') {
           win.document.location.reload()
