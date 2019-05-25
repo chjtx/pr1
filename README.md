@@ -395,6 +395,31 @@ doSome(data => {
 - 所有 js 文件的 import 引入的路径都必须带后缀，省略会出错
 - sass 的 `@import` 导入是相对于当前 sass 所在文件的，只支持 @import sass，暂不支持自动拷贝 @import css 的文件
 - 如果要使用 sass 或 scoped，必须保持严格格式，只允许`<style lang="sass" scoped>`、`<style lang="sass">`、`<style scoped>`，不允许`<style scoped lang="sass">`，同理如果要使用 pug ，必须书写成`<template lang="pug">`，不允许多空格或少空格
+- 在 .vue 或 .html+js 组件里，不带 scoped 的 style 必须使用 this 做选择器处理最外层 dom 的样式，例
+
+```html
+<template>
+<div class="top">
+  <div class="abc">123</div>
+</div>
+</template>
+<style>
+/* 不带 scoped 必须使用 this 表示最外层 dom 选择器 */
+this {
+  background: #efefef;
+}
+.abc {
+  font-size: 20px;
+}
+</style>
+<style scoped>
+/* 带 scoped 可以使用最外层 dom 的 class 来做选择器 */
+.top {
+  font-size: 22px;
+}
+</style>
+```
+
 - 如果同目录存在同名的 html 和 js 文件并开启 `html2VueRender` 选项，默认开启，则视为 Vue 组件，打包时会自动关联转成 render 函数。同名 js 文件只能用 template: html，不能用其它变量
 
   ```js
@@ -405,6 +430,7 @@ doSome(data => {
     template: html
   }
   ```
+
 - 在 html 里的 `<img src="./..">` 和 css 里的 `background:url(./..)` 小于 4k 的图片会自动转为 base64，无法自动解决的静态资源需要手动在 static 选项添加资源目录名或具体资源文件名，如下示例的资源不能自动处理
 
   ```html
@@ -448,7 +474,11 @@ doSome(data => {
 
 ## 更新日志
 
-\### (2019-05-24)
+\### (2019-05-25)
+
+- v0.3.3
+
+  - 修复 template 不是 pug 时出错的bug
 
 - v0.3.2
 

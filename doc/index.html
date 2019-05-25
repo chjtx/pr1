@@ -471,21 +471,35 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 </code></pre>
 <h2>注意事项</h2>
 <ul>
-<li>
-<p>开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径不能解释，将会使用 <code>rollup-plugin-node-resolve</code> 插件解决</p>
-</li>
-<li>
-<p>如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件</p>
-</li>
-<li>
-<p>所有 js 文件的 import 引入的路径都必须带后缀，省略会出错</p>
-</li>
-<li>
-<p>sass 的 <code>@import</code> 导入是相对于当前 sass 所在文件的，只支持 @import sass，暂不支持自动拷贝 @import css 的文件</p>
-</li>
-<li>
-<p>如果要使用 sass 或 scoped，必须保持严格格式，只允许<code>&lt;style lang=&quot;sass&quot; scoped&gt;</code>、<code>&lt;style lang=&quot;sass&quot;&gt;</code>、<code>&lt;style scoped&gt;</code>，不允许<code>&lt;style scoped lang=&quot;sass&quot;&gt;</code>，同理如果要使用 pug ，必须书写成<code>&lt;template lang=&quot;pug&quot;&gt;</code>，不允许多空格或少空格</p>
-</li>
+<li>开发环境，js 文件只会替换 import 和 export ，如果 import('jroll') 导入的路径不能解释，将会使用 <code>rollup-plugin-node-resolve</code> 插件解决</li>
+<li>如果要引用 node_modules 的文件，配置文件必须加载 rollup-plugin-node-resolve 插件</li>
+<li>所有 js 文件的 import 引入的路径都必须带后缀，省略会出错</li>
+<li>sass 的 <code>@import</code> 导入是相对于当前 sass 所在文件的，只支持 @import sass，暂不支持自动拷贝 @import css 的文件</li>
+<li>如果要使用 sass 或 scoped，必须保持严格格式，只允许<code>&lt;style lang=&quot;sass&quot; scoped&gt;</code>、<code>&lt;style lang=&quot;sass&quot;&gt;</code>、<code>&lt;style scoped&gt;</code>，不允许<code>&lt;style scoped lang=&quot;sass&quot;&gt;</code>，同理如果要使用 pug ，必须书写成<code>&lt;template lang=&quot;pug&quot;&gt;</code>，不允许多空格或少空格</li>
+<li>在 .vue 或 .html+js 组件里，不带 scoped 的 style 必须使用 this 做选择器处理最外层 dom 的样式，例</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"top"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"abc"</span>&gt;</span>123<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+<span class="hljs-comment">/* 不带 scoped 必须使用 this 表示最外层 dom 选择器 */</span>
+<span class="hljs-selector-tag">this</span> {
+  <span class="hljs-attribute">background</span>: <span class="hljs-number">#efefef</span>;
+}
+<span class="hljs-selector-class">.abc</span> {
+  <span class="hljs-attribute">font-size</span>: <span class="hljs-number">20px</span>;
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">style</span> <span class="hljs-attr">scoped</span>&gt;</span><span class="css">
+<span class="hljs-comment">/* 带 scoped 可以使用最外层 dom 的 class 来做选择器 */</span>
+<span class="hljs-selector-class">.top</span> {
+  <span class="hljs-attribute">font-size</span>: <span class="hljs-number">22px</span>;
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+</code></pre>
+<ul>
 <li>
 <p>如果同目录存在同名的 html 和 js 文件并开启 <code>html2VueRender</code> 选项，默认开启，则视为 Vue 组件，打包时会自动关联转成 render 函数。同名 js 文件只能用 template: html，不能用其它变量</p>
 <pre class="hljs"><code><span class="hljs-comment">// html/js 的 Vue 组件只能用 html 作为变量名引入同名 html 文件</span>
@@ -540,8 +554,14 @@ e`</span> + <span class="hljs-string">`xport default { b: 1 }
 </li>
 </ul>
 <h2>更新日志</h2>
-<p>### (2019-05-24)</p>
+<p>### (2019-05-25)</p>
 <ul>
+<li>
+<p>v0.3.3</p>
+<ul>
+<li>修复 template 不是 pug 时出错的bug</li>
+</ul>
+</li>
 <li>
 <p>v0.3.2</p>
 <ul>
