@@ -1,8 +1,8 @@
+/* eslint-disable no-proto */
 (function (win) {
   const cache = Object.create(null)
   const vueMap = Object.create(null)
   let isNodeModule = false
-  let isHotUpdate = false
 
   function dirname (p) {
     return p.slice(0, p.lastIndexOf('/'))
@@ -62,15 +62,11 @@
 
   // 强制刷新 Vue 组件
   function forceUpdate (arr, options) {
-    const oldCtor = arr[0].constructor
-    const newCtor = oldCtor.super.extend(options)
-
-    oldCtor.options = newCtor.options
-    oldCtor.cid = newCtor.cid
-    oldCtor.prototype = newCtor.prototype
-
     arr.slice().forEach(instance => {
+      const newCtor = Object.getPrototypeOf(instance).constructor.super.extend(options)
       if (instance.$vnode && instance.$vnode.context) {
+        instance.__proto__.constructor.options = newCtor.options
+        instance.__proto__.constructor.cid = newCtor.cid
         instance.$vnode.context.$forceUpdate()
       } else {
         window.location.reload()
@@ -178,13 +174,17 @@
       const Vue = data.default
       Vue.mixin({
         beforeCreate () {
-          if (this.$vnode && !isHotUpdate) {
+          if (this.$vnode) {
             const tag = this.$vnode.tag.replace(/vue-component-\d+-/, '')
             if (!vueMap[tag]) {
               vueMap[tag] = []
             }
             vueMap[tag].push(this)
           }
+        },
+        beforeDestroy () {
+          const tag = this.$vnode.tag.replace(/vue-component-\d+-/, '')
+          vueMap[tag].splice(vueMap[tag].indexOf(this), 1)
         }
       })
       pr1.import('./main.js?pr1_module=1', document.URL)
@@ -193,7 +193,6 @@
     // ws
     const ws = new win.WebSocket('ws://localhost:{{port}}')
     ws.onmessage = function (evt) {
-      isHotUpdate = true
       if (pr1.modules[evt.data]) {
         if (`{{hot}}` === 'reload') {
           win.document.location.reload()
