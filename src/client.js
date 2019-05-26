@@ -1,4 +1,3 @@
-/* eslint-disable no-proto */
 (function (win) {
   const cache = Object.create(null)
   const vueMap = Object.create(null)
@@ -63,10 +62,11 @@
   // 强制刷新 Vue 组件
   function forceUpdate (arr, options) {
     arr.slice().forEach(instance => {
-      const newCtor = Object.getPrototypeOf(instance).constructor.super.extend(options)
+      const oldCtor = Object.getPrototypeOf(instance).constructor
+      const newCtor = oldCtor.super.extend(options)
       if (instance.$vnode && instance.$vnode.context) {
-        instance.__proto__.constructor.options = newCtor.options
-        instance.__proto__.constructor.cid = newCtor.cid
+        oldCtor.options = newCtor.options
+        oldCtor.cid = newCtor.cid
         instance.$vnode.context.$forceUpdate()
       } else {
         window.location.reload()
