@@ -19,7 +19,16 @@ function parseModule (txt, url) {
     txt = switchExport(switchImport(txt, dealUrl), dealUrl)
     txt = txt.replace(/\bmodule\.exports\s+=/, 'module.exports.default =')
   }
+  if (/\brequire\(/.test(txt)) {
+    txt = parseRequire(txt, dealUrl)
+  }
   return wrap(txt, url)
+}
+
+function parseRequire (txt, url) {
+  return txt.replace(/\brequire\(([^)]+)\)/g, (_, filePath) => {
+    return `/* ${_} */await _import(${filePath}, '${url}')`
+  })
 }
 
 // 对于 html 这类资源只解释一次 export
@@ -154,7 +163,7 @@ function parseExport (i, url) {
   // 1)
   const reg1 = /^(var|let|const)\s+/
   if (reg1.test(variable)) {
-    result = `exports.${variable.replace(reg1, '')}`
+    result = `${variable.slice(0, variable.indexOf('='))}= exports.${variable.replace(reg1, '')}`
   }
   // 4)
   const reg2 = /^default\s+/

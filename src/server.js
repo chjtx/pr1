@@ -170,6 +170,13 @@ module.exports = function server (port, config) {
       try {
         if (path.extname(filePath) === '') {
           filePath = filePath + '.js'
+          if (!fs.existsSync(filePath)) {
+            filePath = filePath.slice(0, -2) + 'vue'
+          } else if (!fs.existsSync(filePath)) {
+            filePath = filePath.slice(0, -3) + 'json'
+          } else if (!fs.existsSync(filePath)) {
+            filePath = filePath.slice(0, -4) + 'mjs'
+          }
         }
         file = fs.readFileSync(filePath)
         res.writeHead(200)
