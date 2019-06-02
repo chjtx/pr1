@@ -291,7 +291,7 @@ import a, { efg as b, c } from './util.js'      => const { default: a, efg: b, c
 
 ```js
 // export 规则
- export var a = 'xxx'                           => exports.a = 'xxx'
+ export var a = 'xxx'                           => var a = exports.a = 'xxx'
  export { a, b, c }                             => Object.assign(exports, {a, b, c})
  export function a () {}                        => exports.a = a; function a () {}
  export default a                               => exports.default = a

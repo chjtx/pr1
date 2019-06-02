@@ -137,7 +137,7 @@ function removeUnnecessary (rs) {
 }
 
 /* export 规则
-* 1) export var a = 'xxx'                     => exports.a = 'xxx'
+* 1) export var a = 'xxx'                     => var a = exports.a = 'xxx'
 * 2) export { a, b, c }                       => Object.assign(exports, {a, b, c})
 * 3) export function a () {}                  => exports.a = a; function a () {}
 * 4) export default a                         => exports.default = a
