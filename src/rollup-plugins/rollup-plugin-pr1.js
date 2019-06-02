@@ -32,7 +32,7 @@ function addHTMLScope (match, start, scope) {
 function releaseVueTemplate (html) {
   let template = ''
   let script = ''
-  const tpl = /<template( lang="pug")?>([\s\S]*?)<\/template>/.exec(html)
+  const tpl = /<template( lang="pug")?>([\s\S]*?)<\/template>(?=\s+<script)/.exec(html)
   if (tpl) {
     // if (tpl[1]) 即 pug === true
     template = tpl[1] ? pug.compile(tpl[2])() : tpl[2]
@@ -141,9 +141,9 @@ module.exports = function () {
       const isHtml = /\.html$/.test(id) // .vue 文件
       const isCss = /\.css$/.test(id) // .css 文件
       const isSass = /\.sass$/.test(id) // .sass 文件
-      const pathId = id.indexOf('node_modules') > -1
+      const pathId = (id.indexOf('node_modules') > -1
         ? id.slice(id.indexOf('node_modules'))
-        : id.replace(cwd, '').replace(/\\/g, '/')
+        : id.replace(cwd, '')).replace(/\\/g, '/')
       const style = []
       let script = ''
 

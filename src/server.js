@@ -152,7 +152,7 @@ module.exports = function server (port, config) {
         }
         await config.rollupConfig.plugins.reduce(async (opts, plugin) => {
           if (typeof plugin.options === 'function') {
-            const opt = await plugin.options(Object.assign(await opts, config.rollupConfig))
+            const opt = await plugin.options(Object.assign((await opts || {}), config.rollupConfig))
             return opt || opts
           }
         }, options)
@@ -188,6 +188,7 @@ module.exports = function server (port, config) {
         }
         res.end(await parsePr1(file.toString(), uniquePath, filePath, config))
       } catch (e) {
+        console.error(e.message)
         res.writeHead(500, e.message, { 'Content-Type': 'text/plain' })
         res.end()
       }
@@ -205,6 +206,7 @@ module.exports = function server (port, config) {
         file = fs.readFileSync(realPath)
       } catch (e) {
         // 500
+        console.error(e.message)
         res.writeHead(500, e.message, { 'Content-Type': 'text/plain' })
         res.end()
         return
