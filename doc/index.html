@@ -554,14 +554,34 @@ e`</span> + <span class="hljs-string">`xport default { b: 1 }
 </li>
 </ul>
 <h2>更新日志</h2>
-<p>### (2019-05-26)</p>
+<p>### (2019-06-02)</p>
 <ul>
 <li>
-<p>v0.3.5</p>
+<p>v0.3.7</p>
 <ul>
-<li>修复 .vue 热更新修改父组件后子组件无法更新的bug</li>
+<li>修复 html 文件带 ` 字符时出错的bug</li>
+<li>修复 script 带 type 属性解释不了的问题</li>
 </ul>
 </li>
+<li>
+<p>v0.3.6</p>
+</li>
+<li>
+<p>添加模块 rollup-plugin-paths 路径别称支持</p>
+</li>
+<li>
+<p>添加支持 node_modules 模块无后缀名资源的引入</p>
+</li>
+<li>
+<p>修复 <code>export {</code> 以 { 结尾的导出语法解释错误</p>
+</li>
+<li>
+<p>修复文本内容带 <code>{{content}}amp;</code> <code>$</code> 等特殊字符替换文本出错的bug</p>
+</li>
+</ul>
+<p>### v0.3.5 (2019-05-26)</p>
+<ul>
+<li>修复 .vue 热更新修改父组件后子组件无法更新的bug</li>
 </ul>
 <p>### (2019-05-25)</p>
 <ul>

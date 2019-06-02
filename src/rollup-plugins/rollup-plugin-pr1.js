@@ -37,9 +37,9 @@ function releaseVueTemplate (html) {
     // if (tpl[1]) 即 pug === true
     template = tpl[1] ? pug.compile(tpl[2])() : tpl[2]
   }
-  const spt = /<script( lang="ts")?>([\s\S]*?)<\/script>/.exec(html)
+  const spt = /<script( lang="ts")?( type="[^"]*")?>([\s\S]*?)<\/script>/.exec(html)
   if (spt) {
-    script = spt[2]
+    script = spt[3]
   }
   return [template, script]
 }
@@ -141,7 +141,9 @@ module.exports = function () {
       const isHtml = /\.html$/.test(id) // .vue 文件
       const isCss = /\.css$/.test(id) // .css 文件
       const isSass = /\.sass$/.test(id) // .sass 文件
-      const pathId = id.replace(cwd, '').replace(/\\/g, '/')
+      const pathId = id.indexOf('node_modules') > -1
+        ? id.slice(id.indexOf('node_modules'))
+        : id.replace(cwd, '').replace(/\\/g, '/')
       const style = []
       let script = ''
 
@@ -271,8 +273,8 @@ module.exports = function () {
         return [
           `pr1.injectStyle(${JSON.stringify(style.map(i => i.css).join('\n'))}, '${pathId}')`,
           isVue
-            ? `${script.replace(/export default([^{]+){/, (_, a) => 'export default' + a + '{\n  template:`' + html + '`,')}`
-            : `export default \`${html}\``
+            ? `${script.replace(/export default([^{]+){/, (_, a) => 'export default' + a + '{\n  template:' + JSON.stringify(html) + ',')}`
+            : `export default ${JSON.stringify(html)}`
         ].join('\n')
       } else {
         // 生产环境

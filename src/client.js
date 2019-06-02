@@ -193,8 +193,10 @@
           }
         },
         beforeDestroy () {
-          const tag = this.$vnode.tag.replace(/vue-component-\d+-/, '')
-          vueMap[tag].splice(vueMap[tag].indexOf(this), 1)
+          if (this.$vnode) {
+            const tag = this.$vnode.tag.replace(/vue-component-\d+-/, '')
+            vueMap[tag].splice(vueMap[tag].indexOf(this), 1)
+          }
         }
       })
       pr1.import('./main.js?pr1_module=1', document.URL)
