@@ -2,7 +2,7 @@
 import html from './main.html'
 import a, { bb } from './a.js'
 import { b as abc, o as omg } from './b.js'
-import Vue from 'vue/dist/vue.esm.browser.js'
+import Vue from 'vue'
 import 'jroll/src/jroll.js'
 import d from './d.vue';
 

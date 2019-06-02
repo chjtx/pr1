@@ -18,7 +18,7 @@
     // node_modules 路径
     } else if (currentPath[0] !== '.' && currentPath[0] !== '/') {
       isNodeModule = true
-      return currentPath
+      return 'node_modules/' + currentPath
 
     // 相对路径请求
     } else {
@@ -78,15 +78,25 @@
   const pr1 = {
     // modules
     modules: {},
+    // modulesCache
+    modulesTree: cache,
     // import
     import (path, parentPath, noCache) {
+      // 因为有些路径需要加上 /index.js ，因此判断删掉 /index.js 是否已存在
+      let realParentPath = null
+      if (/\/index\.js$/.test(parentPath)) {
+        const simpleParentPath = parentPath.replace(/\/index\.js$/, '')
+        if (cache[simpleParentPath] && simpleParentPath !== parentPath) {
+          realParentPath = simpleParentPath
+        }
+      }
       const uniquePath = resolvePath(path, parentPath)
 
       if (pr1.modules[uniquePath] && !noCache) {
         return pr1.modules[uniquePath].exports
       }
-      if (!cache[parentPath]) {
-        cache[parentPath] = {
+      if (!cache[realParentPath || parentPath]) {
+        cache[realParentPath || parentPath] = {
           src: parentPath,
           depend: 0,
           children: []
@@ -96,19 +106,19 @@
         cache[uniquePath] = {
           src: uniquePath,
           depend: 0,
-          parent: cache[parentPath],
+          parent: cache[realParentPath || parentPath],
           children: [],
           origin: path
         }
       }
       if (!noCache) {
-        cache[parentPath].children.push(cache[uniquePath])
+        cache[realParentPath || parentPath].children.push(cache[uniquePath])
       }
-      cache[parentPath].depend++
+      cache[realParentPath || parentPath].depend++
 
       // 检测是否存在循环引用
-      let currentCheck = cache[parentPath]
-      const loopQueue = [parentPath, uniquePath]
+      let currentCheck = cache[realParentPath || parentPath]
+      const loopQueue = [(realParentPath || parentPath), uniquePath]
       while (currentCheck.parent) {
         loopQueue.unshift(currentCheck.parent.src)
         if (currentCheck.parent.src === uniquePath) {
@@ -170,7 +180,7 @@
   // hot
   if (`{{configHot}}`) {
     // vue beforeCreate
-    pr1.import('vue/dist/vue.esm.browser.js', '/index.html').then(data => {
+    pr1.import('vue', '/index.html').then(data => {
       const Vue = data.default
       Vue.mixin({
         beforeCreate () {

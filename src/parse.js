@@ -2,13 +2,21 @@ const fs = require('fs')
 const path = require('path')
 const { appRootPath } = require('./tools.js')
 const vueComponent = require('./rollup-plugins/rollup-plugin-pr1.js')
-const cwd = process.cwd()
 
 const pr1Plugins = [vueComponent()]
 
 function parseModule (txt, url) {
+  let dealUrl = url
+  if (url.indexOf('node_modules') > -1) {
+    // 判断是文件夹则加上 index.js
+    try {
+      if (fs.lstatSync(path.resolve(appRootPath, url)).isDirectory()) {
+        dealUrl = url + '/index.js'
+      }
+    } catch (e) { }
+  }
   if (/\bimport\b|\bexport\b/.test(txt)) {
-    txt = switchExport(switchImport(txt, url), url)
+    txt = switchExport(switchImport(txt, dealUrl), dealUrl)
     txt = txt.replace(/\bmodule\.exports\s+=/, 'module.exports.default =')
   }
   return wrap(txt, url)
@@ -110,7 +118,7 @@ function switchImport (txt, url) {
     return parseImport(i, url)
   })
   results.forEach(r => {
-    txt = txt.replace(r.expression, `/* ${r.expression} */` + r.result)
+    txt = replaceText(txt, r.expression, `/* ${r.expression} */` + r.result)
   })
   return txt
 }
@@ -130,6 +138,7 @@ function removeUnnecessary (rs) {
 */
 function parseExport (i, url) {
   let result = ''
+  let notClosed = false
   let variable = i.replace(/(\s+)?\bexport\b\s+/, '')
 
   variable = variable.trim().replace(/;/g, '')
@@ -156,8 +165,8 @@ function parseExport (i, url) {
   const reg3 = /^(function|class)\s+/
   if (reg3.test(variable)) {
     let vari = variable.replace(reg3, '')
-    vari = vari.slice(0, vari.indexOf(' '))
-    result = `exports.${variable.replace(reg3, '').split(' ')[0]} = ${vari}; ${variable}`
+    vari = vari.slice(0, vari.indexOf('('))
+    result = `exports.${vari} = ${vari}; ${variable}`
   }
   // 2) 5)
   if (variable[0] === '{') {
@@ -165,12 +174,24 @@ function parseExport (i, url) {
       const vars = variable.replace(/\{|\}/g, '').split(',').map(v => v.split(/\bas\b/))
       variable = vars.map(v => v[0].trim() + ': ' + v[1].trim()).join(', ')
     }
-    result = `Object.assign(exports, ${variable})`
+    result = `Object.assign(exports, ${variable}`
+    if (variable[variable.length - 1] === '}') {
+      result = result + ')'
+    } else {
+      notClosed = true
+    }
   }
   return {
     expression: i,
-    result
+    result,
+    notClosed
   }
+}
+
+// 不使用 String 的 replace 原生方法避免 txt 出现 $& $$ $` $' 时出错
+function replaceText (txt, a, b) {
+  const i = txt.indexOf(a)
+  return txt.slice(0, i) + b + txt.slice(i + a.length)
 }
 
 function switchExport (txt, url) {
@@ -182,13 +203,20 @@ function switchExport (txt, url) {
     return parseExport(i, url)
   })
   results.forEach(r => {
-    txt = txt.replace(r.expression, `/* ${r.expression} */` + r.result)
+    if (r.notClosed) {
+      // 找到最近的一个 } 后面加 )
+      let index = txt.indexOf(r.expression) + r.expression.length
+      while (txt[index] && txt[index] !== '}') {
+        index++
+      }
+      txt = txt.slice(0, index + 1) + ')' + txt.slice(index + 1)
+    }
+    txt = replaceText(txt, r.expression, `/* ${r.expression} */` + r.result)
   })
   return txt
 }
 
-async function parsePr1 (code, url, config) {
-  const id = path.resolve(cwd, (url.indexOf('/') === 0 ? '.' + url : url))
+async function parsePr1 (code, url, id, config) {
   // 执行rollup插件的transform
   if (config && config.rollupConfig && config.rollupConfig.plugins) {
     code = await [...pr1Plugins, ...config.rollupConfig.plugins].reduce(async (code, plugin) => {
@@ -201,13 +229,17 @@ async function parsePr1 (code, url, config) {
       return code
     }, code)
   }
-  return /\.(vue|js)$/.test(url) ? parseModule(code, url) : parseOnceExport(code, url)
+  return /\.(html|htm|css)$/.test(url) ? parseOnceExport(code, url) : parseModule(code, url)
 }
 
 async function parseNode (url, config) {
-  const p = path.resolve(appRootPath, 'node_modules', url)
-  if (fs.existsSync(p)) {
-    return parsePr1(fs.readFileSync(p).toString(), url, config)
+  try {
+    const p = path.resolve(appRootPath, 'node_modules', url)
+    if (fs.existsSync(p)) {
+      return parsePr1(fs.readFileSync(p).toString(), 'node_modules/' + url, p, config)
+    }
+  } catch (e) {
+    return false
   }
   return false
 }

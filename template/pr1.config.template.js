@@ -1,11 +1,12 @@
 const nodeResolve = require('rollup-plugin-node-resolve')
+const rollupPaths = require('rollup-plugin-paths')
 require('colors')
 
 module.exports = {
   // vendor 子项的第一个值将会整合到 rollup 的 external
   // [0]是开发环境用的，[1]是生产环境用的，如果没有[1]生产环境也用[0]
   vendor: [
-    ['vue/dist/vue.esm.browser.js', 'vue/dist/vue.runtime.min.js']
+    ['vue', 'vue/dist/vue.runtime.min.js']
   ],
   // true 表示存在同级目录且同名的 html 和 js 文件会被关联到一起
   // 转成 Vue render 组件提高性能，仅生产环境起作用
@@ -19,11 +20,15 @@ module.exports = {
   // rollup 选项，必须有
   rollupConfig: {
     globals: {
-      'vue/dist/vue.esm.browser.js': 'Vue'
+      'vue': 'Vue'
     },
     plugins: [
       // rollup-plugin-node-resolve 用于解决引用 node_modules 资源路径
-      nodeResolve()
+      nodeResolve(),
+      // 用于缩写 vue 等资源
+      rollupPaths({
+        'vue': '../node_modules/vue/dist/vue.esm.browser.js'
+      })
     ]
   },
   // babel 选项，不提供将不会进行转码，不使用 uglify 压缩时，可安装 babel 的 minify 插件压缩

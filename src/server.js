@@ -4,6 +4,7 @@ const { URL } = require('url')
 const fs = require('fs')
 const WebSocket = require('ws')
 const { parsePr1, parseNode } = require('./parse.js')
+const { appRootPath } = require('./tools.js')
 
 require('colors')
 
@@ -114,29 +115,49 @@ module.exports = function server (port, config) {
       })
     }
 
+    let isPr1Module = cookie && checkPr1Module(cookieParams, req.url)
+    let isNodeModule = false
     // node_modules 模块
-    if (req.url.indexOf('pr1_node=1') > -1) {
+    if (req.url.indexOf('pr1_node=1') > -1 || (cookieParams.importer && cookieParams.importer.indexOf('node_modules') > -1)) {
       const txt = await parseNode(cookieParams.importee, config)
       if (txt) {
         res.writeHead(200)
         res.end(txt)
         return
       }
+      isNodeModule = true
     }
 
-    const isPr1Module = cookie && checkPr1Module(cookieParams, req.url)
-
     // 飘刃模块
-    if (req.url.indexOf('pr1_module=1') > -1 || isPr1Module) {
-      const importee = isPr1Module ? cookieParams['importee'] : null
-      let importer = isPr1Module ? cookieParams['importer'] : null
+    if (req.url.indexOf('pr1_module=1') > -1 || isPr1Module || isNodeModule) {
+      const importee = (isPr1Module || isNodeModule) ? cookieParams['importee'] : null
+      let importer = (isPr1Module || isNodeModule) ? cookieParams['importer'] : null
       let filePath = ''
       let file = ''
-      filePath = importer ? path.resolve(cwd, path.dirname('.' + importer), importee) : realPath
+      let resolveId = false
+      if (isNodeModule && importer.indexOf('node_modules') > -1) {
+        filePath = path.resolve(appRootPath, path.dirname(importer), importee)
+      } else {
+        filePath = importer ? path.resolve(cwd, path.dirname('.' + importer), importee) : realPath
+      }
 
       // 若文件不存在，尝试使用 rollup 插件的 resolveId 解决
       if (!fs.existsSync(filePath)) {
+        resolveId = true
         importer = path.resolve(cwd, '.' + importer)
+
+        // options
+        const options = {
+          input: path.resolve(cwd, 'index.js')
+        }
+        await config.rollupConfig.plugins.reduce(async (opts, plugin) => {
+          if (typeof plugin.options === 'function') {
+            const opt = await plugin.options(Object.assign(await opts, config.rollupConfig))
+            return opt || opts
+          }
+        }, options)
+
+        // resolveId
         filePath = await config.rollupConfig.plugins.reduce(async (id, plugin) => {
           if (typeof plugin.resolveId === 'function') {
             const result = await plugin.resolveId(importee, importer)
@@ -145,10 +166,27 @@ module.exports = function server (port, config) {
           return id
         }, filePath)
       }
+
       try {
+        if (path.extname(filePath) === '') {
+          filePath = filePath + '.js'
+        }
         file = fs.readFileSync(filePath)
         res.writeHead(200)
-        res.end(await parsePr1(file.toString(), pathname, config))
+        let uniquePath
+        if (resolveId) {
+          if (importee.indexOf('.') > -1) {
+            const pp = path.resolve(appRootPath, path.dirname(importer), importee)
+            uniquePath = pp.slice(pp.indexOf('node_modules')).replace(/\\/g, '/')
+          } else {
+            uniquePath = 'node_modules/' + importee
+          }
+        } else if (isNodeModule) {
+          uniquePath = importer.indexOf('node_modules') > -1 ? filePath.replace(/\\/g, '/').slice(filePath.indexOf('node_modules')) : 'node_modules/' + importee
+        } else {
+          uniquePath = pathname
+        }
+        res.end(await parsePr1(file.toString(), uniquePath, filePath, config))
       } catch (e) {
         res.writeHead(500, e.message, { 'Content-Type': 'text/plain' })
         res.end()
