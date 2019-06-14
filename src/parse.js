@@ -119,7 +119,7 @@ function parseImport (i, url) {
 }
 
 function switchImport (txt, url) {
-  const imports = txt.match(/^( +)?\bimport\b[^\n\r]+/gm)
+  const imports = txt.match(/^( +)?\bimport\b[^'"]+('|")[^'"]+('|")/gm)
   if (!imports) {
     return txt
   }
