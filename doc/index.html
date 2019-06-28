@@ -399,7 +399,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <span class="hljs-keyword">import</span> a, { efg <span class="hljs-keyword">as</span> b, c } <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>      =&gt; <span class="hljs-keyword">const</span> { <span class="hljs-attr">default</span>: a, <span class="hljs-attr">efg</span>: b, c } = <span class="hljs-keyword">await</span> _import(<span class="hljs-string">'./util.js'</span>)
 </code></pre>
 <pre class="hljs"><code><span class="hljs-comment">// export 规则</span>
- <span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> a = <span class="hljs-string">'xxx'</span>                           =&gt; exports.a = <span class="hljs-string">'xxx'</span>
+ <span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> a = <span class="hljs-string">'xxx'</span>                           =&gt; <span class="hljs-keyword">var</span> a = exports.a = <span class="hljs-string">'xxx'</span>
  <span class="hljs-keyword">export</span> { a, b, c }                             =&gt; <span class="hljs-built_in">Object</span>.assign(exports, {a, b, c})
  <span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span> (<span class="hljs-params"></span>) </span>{}                        =&gt; exports.a = a; <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span> (<span class="hljs-params"></span>) </span>{}
  <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> a                               =&gt; exports.default = a
@@ -554,8 +554,21 @@ e`</span> + <span class="hljs-string">`xport default { b: 1 }
 </li>
 </ul>
 <h2>更新日志</h2>
+<p>### v0.3.9 (2019-06-28)</p>
+<ul>
+<li>小优化</li>
+</ul>
 <p>### (2019-06-02)</p>
 <ul>
+<li>
+<p>v0.3.8</p>
+<ul>
+<li>添加对 require 的转换</li>
+<li>添加支持 node_modules 文件无后缀的 vue/mjs/json 文件路径</li>
+<li>修复 .vue 文件 template 里含 template 标签解释错误的问题</li>
+<li>修复 <code>export const a =</code> 在本文件不起作用的 bug</li>
+</ul>
+</li>
 <li>
 <p>v0.3.7</p>
 <ul>
@@ -576,12 +589,12 @@ e`</span> + <span class="hljs-string">`xport default { b: 1 }
 <p>修复 <code>export {</code> 以 { 结尾的导出语法解释错误</p>
 </li>
 <li>
-<p>修复文本内容带 <code>{{content}}amp;</code> <code>$</code> 等特殊字符替换文本出错的bug</p>
+<p>修复文本内容带 <code>{{content}}amp;</code> <code>$</code> 等特殊字符替换文本出错的 bug</p>
 </li>
 </ul>
 <p>### v0.3.5 (2019-05-26)</p>
 <ul>
-<li>修复 .vue 热更新修改父组件后子组件无法更新的bug</li>
+<li>修复 .vue 热更新修改父组件后子组件无法更新的 bug</li>
 </ul>
 <p>### (2019-05-25)</p>
 <ul>

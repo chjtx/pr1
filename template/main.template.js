@@ -1,4 +1,4 @@
-import Vue from 'vue/dist/vue.esm.browser.js'
+import Vue from 'vue'
 
 // eslint-disable-next-line no-new
 new Vue({

@@ -32,7 +32,7 @@ function addHTMLScope (match, start, scope) {
 function releaseVueTemplate (html) {
   let template = ''
   let script = ''
-  const tpl = /<template( lang="pug")?>([\s\S]*?)<\/template>(?=\s+<script)/.exec(html)
+  const tpl = /<template( lang="pug")?>([\s\S]+)<\/template>/.exec(html)
   if (tpl) {
     // if (tpl[1]) 即 pug === true
     template = tpl[1] ? pug.compile(tpl[2])() : tpl[2]

@@ -135,7 +135,7 @@ module.exports = function server (port, config) {
       let filePath = ''
       let file = ''
       let resolveId = false
-      if (isNodeModule && importer.indexOf('node_modules') > -1) {
+      if (isNodeModule && importer && importer.indexOf('node_modules') > -1) {
         filePath = path.resolve(appRootPath, path.dirname(importer), importee)
       } else {
         filePath = importer ? path.resolve(cwd, path.dirname('.' + importer), importee) : realPath
