@@ -11,7 +11,7 @@ let port = '8686'
 let isBuild = false
 let configPath = ''
 let configAbsolutePath = ''
-let config = null
+let config = {}
 
 process.argv.forEach(p => {
   if (p === 'build') {
