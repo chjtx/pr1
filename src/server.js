@@ -101,7 +101,8 @@ module.exports = function server (port, config) {
     const realPath = path.resolve(cwd, '.' + pathname)
 
     // 通过 cookie 获取来源去处
-    const cookie = req.headers.cookie
+    // const cookie = req.headers.cookie
+    const cookie = req.url
     const cookieParams = {}
     if (cookie && cookie.indexOf('pr1_module=1') > -1) {
       cookie.split(';').forEach(i => {
@@ -219,7 +220,7 @@ module.exports = function server (port, config) {
         return
       }
       // 200
-      res.setHeader('Set-Cookie', ['pr1_module=1'])
+      // res.setHeader('Set-Cookie', ['pr1_module=1'])
       res.writeHead(200, { 'Content-Type': contentType })
       if (contentType === 'text/html') {
         // 普通html文件

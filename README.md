@@ -2,6 +2,8 @@
 
 约定大于配置的极速 Web 应用打包工具，支持 .vue 文件，生产使用 Rollup 打包
 
+> 仅供学习研究，请勿用于生产
+
 ## 仓库
 
 【Github】 <a target="_blank" href="https://github.com/chjtx/pr1">https://github.com/chjtx/pr1</a>
@@ -474,6 +476,11 @@ this {
 
 ## 更新日志
 
+\### v0.3.10 (2019-08-12)
+
+- 将cookie传参改回url传参，解决初次加载空白页的问题
+- 修复在没config.js的目录跑`pr1 start`报错的问题
+
 \### v0.3.9 (2019-06-28)
 
 - 小优化
@@ -608,9 +615,7 @@ this {
 
 __支持方式__
 
-1、购买好货记产品，好货记是作者目前创业的产物，地址：<a target="_blank" href="https://goodgoodsbook.com/">https://goodgoodsbook.com/</a>
-
-2、打赏1块几毛钱，让作者不用去天桥底蹲位
+打赏1块几毛钱，让作者不用去天桥底蹲位
 
 <img src="https://goodgoodsbook.com/imgs/alipay.jpg" width="300">
 

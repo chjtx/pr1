@@ -128,8 +128,9 @@
       }
 
       return new Promise(resolve => {
-        const src = uniquePath
-        document.cookie = `pr1_module=1&importee=${path}&importer=${parentPath}`
+        const src = uniquePath + (uniquePath.indexOf('?') > -1 ? '&' : '?') +
+          `__________pr1_module=1&importee=${path}&importer=${parentPath}`
+        // document.cookie = `pr1_module=1&importee=${path}&importer=${parentPath}`
         cache[uniquePath].resolve = async (rs) => {
           // vue 组件添加名称
           if (`{{configHot}}` &&
