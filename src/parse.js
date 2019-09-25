@@ -47,7 +47,7 @@ function type1 (variable, filePath, url) {
 
 function type2 (variable, filePath, url) {
   const vars = variable.replace(/\{|\}/g, '').split(',').map(v => v.split(/\bas\b/))
-  return `const { ${vars.map(v => v[0].trim() + ': ' + v[1].trim()).join(', ')} } = await _import(${filePath}, '${url}')`
+  return `const { ${vars.map(v => v[0].trim() + (v[1] ? ': ' + v[1].trim() : '')).join(', ')} } = await _import(${filePath}, '${url}')`
 }
 
 function type3 (variable, filePath, url) {
