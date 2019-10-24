@@ -226,6 +226,7 @@ function switchExport (txt, url) {
 }
 
 async function parsePr1 (code, url, id, config) {
+  code = /\.(html|htm|css)$/.test(url) ? parseOnceExport(code, url) : parseModule(code, url)
   // 执行rollup插件的transform
   if (config && config.rollupConfig && config.rollupConfig.plugins) {
     code = await [...pr1Plugins, ...config.rollupConfig.plugins].reduce(async (code, plugin) => {
@@ -238,7 +239,7 @@ async function parsePr1 (code, url, id, config) {
       return code
     }, code)
   }
-  return /\.(html|htm|css)$/.test(url) ? parseOnceExport(code, url) : parseModule(code, url)
+  return code
 }
 
 async function parseNode (url, config) {

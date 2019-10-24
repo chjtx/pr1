@@ -124,7 +124,7 @@ function returnJS (code, id) {
 }
 
 module.exports = function () {
-  const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.vue', '/**/*.sass', '/**/*.css'])
+  const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.ts', '/**/*.vue', '/**/*.sass', '/**/*.css'])
   let css = []
   let count = 0
   const cacheScope = {}
@@ -136,7 +136,7 @@ module.exports = function () {
         return
       }
 
-      const isJs = /\.js$/.test(id) // .js 文件
+      const isJs = /(\.js|\.ts)$/.test(id) // .js 文件
       const isVue = /\.vue$/.test(id) // .vue 文件
       const isHtml = /\.html$/.test(id) // .vue 文件
       const isCss = /\.css$/.test(id) // .css 文件
