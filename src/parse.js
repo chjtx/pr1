@@ -38,7 +38,7 @@ function parseOnceExport (txt, url) {
 }
 
 function wrap (txt, url) {
-  return `(async function (_import, module, exports) {${txt};Object.freeze(exports)})(pr1.import,(pr1.modules['${url}']={id:'${url}',exports:{}}),pr1.modules['${url}'].exports)`
+  return `(async function (_import, module, exports) {${txt};\nObject.freeze(exports)})(pr1.import,(pr1.modules['${url}']={id:'${url}',exports:{}}),pr1.modules['${url}'].exports)`
 }
 
 function type1 (variable, filePath, url) {
@@ -226,7 +226,6 @@ function switchExport (txt, url) {
 }
 
 async function parsePr1 (code, url, id, config) {
-  code = /\.(html|htm|css)$/.test(url) ? parseOnceExport(code, url) : parseModule(code, url)
   // 执行rollup插件的transform
   if (config && config.rollupConfig && config.rollupConfig.plugins) {
     code = await [...pr1Plugins, ...config.rollupConfig.plugins].reduce(async (code, plugin) => {
@@ -239,7 +238,7 @@ async function parsePr1 (code, url, id, config) {
       return code
     }, code)
   }
-  return code
+  return /\.(html|htm|css)$/.test(url) ? parseOnceExport(code, url) : parseModule(code, url)
 }
 
 async function parseNode (url, config) {
