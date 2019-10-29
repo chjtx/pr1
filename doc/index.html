@@ -256,14 +256,14 @@ div
   }
 }
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">style</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">"sass"</span> <span class="hljs-attr">scoped</span>&gt;</span><span class="undefined">
+<span class="hljs-tag">&lt;<span class="hljs-name">style</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">"sass"</span> <span class="hljs-attr">scoped</span>&gt;</span>
 $bg: #ccc;
 
 .top {
   padding: 20px;
   background: $bg;
 }
-</span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
 </code></pre>
 <ul>
 <li>创建 src/pages/Item.js</li>
@@ -464,6 +464,28 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
   |-- page3/
     |-- index.html
 </code></pre>
+<h2>支持 Typescript</h2>
+<p>目前只支持引入 .ts 文件，.vue 组件的 type=ts 暂不支持</p>
+<pre class="hljs"><code><span class="hljs-comment"># 安装</span>
+npm i rollup-plugin-typescript typescript tslib
+</code></pre>
+<p>修改 pr1.config.js 添加 typescript 插件</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> typescript = <span class="hljs-built_in">require</span>(<span class="hljs-string">'rollup-plugin-typescript'</span>)
+<span class="hljs-comment">// ...</span>
+
+<span class="hljs-built_in">module</span>.exports = {
+  <span class="hljs-attr">rollupConfig</span>: {
+    <span class="hljs-comment">// ...</span>
+    plugins: [
+      typescript({
+        <span class="hljs-attr">target</span>: <span class="hljs-string">'ESNext'</span>,
+      })
+      <span class="hljs-comment">// ...</span>
+    ]
+  },
+  <span class="hljs-comment">// ...</span>
+}
+</code></pre>
 <h2>生产注释</h2>
 <p>如下示例：</p>
 <pre class="hljs"><code>doSome(<span class="hljs-function"><span class="hljs-params">data</span> =&gt;</span> {
@@ -563,6 +585,10 @@ e`</span> + <span class="hljs-string">`xport default { b: 1 }
 </li>
 </ul>
 <h2>更新日志</h2>
+<p>### v0.3.12 (2019-10-29)</p>
+<ul>
+<li>更好的支持 Typescript</li>
+</ul>
 <p>### v0.3.11 (2019-10-04)</p>
 <ul>
 <li>修复import有as和没as混合解释出错的bug</li>

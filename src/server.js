@@ -77,7 +77,10 @@ function watchFiles (dir) {
 
 // 两路径相对表示是 pr1Module
 function checkPr1Module (params, url) {
-  return params.pr1_module === '1' && path.resolve(cwd, '.' + url) === path.resolve(path.dirname(path.resolve(cwd, '.' + (params.importer || ''))), (params.importee || ''))
+  return params.pr1_module === '1'
+    && path.resolve(cwd, '.' + url).split('?')[0] === path.resolve(
+      path.dirname(path.resolve(cwd, '.' + (params.importer || ''))), (params.importee || '')
+    )
 }
 
 // 浏览器端所需文件
@@ -102,7 +105,7 @@ module.exports = function server (port, config) {
 
     // 通过 cookie 获取来源去处
     // const cookie = req.headers.cookie
-    const cookie = req.url
+    const cookie = req.url.split('__________')[1]
     const cookieParams = {}
     if (cookie && cookie.indexOf('pr1_module=1') > -1) {
       cookie.split(';').forEach(i => {
@@ -170,8 +173,10 @@ module.exports = function server (port, config) {
 
       try {
         if (path.extname(filePath) === '') {
-          filePath = filePath + '.js'
+          filePath = filePath + '.ts'
           if (!fs.existsSync(filePath)) {
+            filePath = filePath.slice(0, -2) + 'js'
+          } else if (!fs.existsSync(filePath)) {
             filePath = filePath.slice(0, -2) + 'vue'
           } else if (!fs.existsSync(filePath)) {
             filePath = filePath.slice(0, -3) + 'json'
@@ -185,7 +190,8 @@ module.exports = function server (port, config) {
         if (resolveId) {
           if (importee.indexOf('.') > -1) {
             const pp = path.resolve(appRootPath, path.dirname(importer), importee)
-            uniquePath = pp.slice(pp.indexOf('node_modules')).replace(/\\/g, '/')
+            const pos = pp.indexOf('node_modules')
+            uniquePath = (pos === -1 ? pp.replace(cwd, '') : pp.slice(pos)).replace(/\\/g, '/')
           } else {
             uniquePath = 'node_modules/' + importee
           }

@@ -369,6 +369,35 @@ dist/
     |-- index.html
 ```
 
+## 支持 Typescript
+
+目前只支持引入 .ts 文件，.vue 组件的 type=ts 暂不支持
+
+```bash
+# 安装
+npm i rollup-plugin-typescript typescript tslib
+```
+
+修改 pr1.config.js 添加 typescript 插件
+
+```js
+const typescript = require('rollup-plugin-typescript')
+// ...
+
+module.exports = {
+  rollupConfig: {
+    // ...
+    plugins: [
+      typescript({
+        target: 'ESNext',
+      })
+      // ...
+    ]
+  },
+  // ...
+}
+```
+
 ## 生产注释
 
 如下示例：
@@ -475,6 +504,10 @@ this {
   dist 目录繁忙或锁定，无法删除。解决方案：检查 dist/index.html 是否在浏览器中打开，将其关闭再重新打包
 
 ## 更新日志
+
+\### v0.3.12 (2019-10-29)
+
+- 更好的支持 Typescript
 
 \### v0.3.11 (2019-10-04)
 
