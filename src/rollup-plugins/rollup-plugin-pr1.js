@@ -124,7 +124,7 @@ function returnJS (code, id) {
 }
 
 module.exports = function () {
-  const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.ts', '/**/*.vue', '/**/*.sass', '/**/*.css'])
+  const filter = createFilter(['/**/*.html', '/**/*.js', '/**/*.ts', '/**/*.vue', '/**/*.sass', '/**/*.scss', '/**/*.css'])
   let css = []
   let count = 0
   const cacheScope = {}
@@ -141,6 +141,7 @@ module.exports = function () {
       const isHtml = /\.html$/.test(id) // .vue 文件
       const isCss = /\.css$/.test(id) // .css 文件
       const isSass = /\.sass$/.test(id) // .sass 文件
+      const isScss = /\.scss$/.test(id) // .scss 文件
       const pathId = (id.indexOf('node_modules') > -1
         ? id.slice(id.indexOf('node_modules'))
         : id.replace(cwd, '')).replace(/\\/g, '/')
@@ -162,10 +163,11 @@ module.exports = function () {
         }
       }
 
-      if (isSass) {
+      if (isSass || isScss) {
         const _css = sass.renderSync({
           data: code,
-          includePaths: [path.dirname(id)]
+          includePaths: [path.dirname(id)],
+          indentedSyntax: isSass
         }).css.toString()
         if (process.env.NODE_ENV === 'development') {
           return `pr1.injectStyle(${JSON.stringify(_css)}, '${pathId}')`
@@ -178,7 +180,7 @@ module.exports = function () {
       }
 
       // 分离style和html
-      const reg = /<style( lang="sass")?( scoped)?>([\s\S]*?)<\/style>/g
+      const reg = /<style( lang="s[ac]ss")?( scoped)?>([\s\S]*?)<\/style>/g
       let regResult = null
       let html = code
       while ((regResult = reg.exec(code))) {
@@ -188,7 +190,8 @@ module.exports = function () {
           // sass
           singleCss = sass.renderSync({
             data: singleCss,
-            includePaths: [path.dirname(id)]
+            includePaths: [path.dirname(id)],
+            indentedSyntax: regResult[1].indexOf('sass') > -1
           }).css.toString()
         }
         style.push({
