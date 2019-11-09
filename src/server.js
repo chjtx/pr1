@@ -29,6 +29,7 @@ const mime = {
   'wmv': 'video/x-ms-wmv',
   'xml': 'text/xml'
 }
+const cache = Object.create(null)
 let fileChangeTime = 0
 let websocket = null
 
@@ -77,10 +78,9 @@ function watchFiles (dir) {
 
 // 两路径相对表示是 pr1Module
 function checkPr1Module (params, url) {
-  return params.pr1_module === '1'
-    && path.resolve(cwd, '.' + url).split('?')[0] === path.resolve(
-      path.dirname(path.resolve(cwd, '.' + (params.importer || ''))), (params.importee || '')
-    )
+  return params.pr1_module === '1' && path.resolve(cwd, '.' + url).split('?')[0] === path.resolve(
+    path.dirname(path.resolve(cwd, '.' + (params.importer || ''))), (params.importee || '')
+  )
 }
 
 // 浏览器端所需文件
@@ -88,11 +88,28 @@ const client = fs.readFileSync(path.resolve(__dirname, './client.js')).toString(
 
 module.exports = function server (port, config) {
   const server = http.createServer(async (req, res) => {
+    const ifNoneMatch = req.headers['if-none-match'] || ''
+
     // pr1-client.js
     if (req.url === '/pr1-client.js') {
-      res.end(client.replace('{{port}}', port)
-        .replace(/`\{\{configHot\}\}`/g, !!config.hot)
-        .replace('`{{hot}}`', `'${config.hot}'`))
+      if (cache['/pr1-client.js']) {
+        res.writeHead(304)
+        res.end()
+      } else {
+        cache['/pr1-client.js'] = 1
+        res.writeHead(200, {
+          'Content-Type': 'text/javascript',
+          'ETag': Date.now()
+        })
+        res.end(client.replace('{{port}}', port)
+          .replace(/`\{\{configHot\}\}`/g, !!config.hot)
+          .replace('`{{hot}}`', `'${config.hot}'`))
+      }
+      return
+    } else if (cache[req.url] && String(fs.statSync(cache[req.url]).mtimeMs) === ifNoneMatch) {
+      // 判断缓存
+      res.writeHead(304)
+      res.end()
       return
     }
 
@@ -184,8 +201,16 @@ module.exports = function server (port, config) {
             filePath = filePath.slice(0, -4) + 'mjs'
           }
         }
+
+        res.writeHead(200, {
+          'Content-Type': 'text/javascript',
+          'ETag': String(fs.statSync(filePath).mtimeMs)
+        })
+
+        cache[req.url] = filePath
+
         file = fs.readFileSync(filePath)
-        res.writeHead(200)
+
         let uniquePath
         if (resolveId) {
           if (importee.indexOf('.') > -1) {
@@ -227,7 +252,13 @@ module.exports = function server (port, config) {
       }
       // 200
       // res.setHeader('Set-Cookie', ['pr1_module=1'])
-      res.writeHead(200, { 'Content-Type': contentType })
+      res.writeHead(200, {
+        'Content-Type': contentType,
+        'ETag': String(fs.statSync(realPath).mtimeMs)
+      })
+
+      cache[req.url] = realPath
+
       if (contentType === 'text/html') {
         // 普通html文件
         res.write(file.toString().replace(/(<head>[\n\r]+)/, `$1  <script src="/pr1-client.js"></script>\n`))
