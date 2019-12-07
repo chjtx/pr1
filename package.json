@@ -1,7 +1,7 @@
 {
   "name": "piaoren",
-  "version": "0.3.12",
-  "description": "which front-end engineering build tools for Vue project",
+  "version": "0.3.13",
+  "description": "前端工程管理工具",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
