@@ -79,7 +79,7 @@ function watchFiles (dir) {
 
 // 两路径相对表示是 pr1Module
 function checkPr1Module (params, url) {
-  return params.pr1_module === '1' && path.resolve(cwd, '.' + url).split('?')[0] === path.resolve(
+  return params.pr1_module === '1' && path.resolve(cwd, '.' + url.split('?')[0]) === path.resolve(
     path.dirname(path.resolve(cwd, '.' + (params.importer || ''))), (params.importee || '')
   )
 }

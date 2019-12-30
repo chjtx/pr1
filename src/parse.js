@@ -178,12 +178,19 @@ function parseExport (i, url) {
   if (reg2.test(variable)) {
     result = `exports.default = ${variable.replace(reg2, '')}`
   }
-  // 3) 6)
-  const reg3 = /^(function|class)\s+/
+  // 3)
+  const reg3 = /^function\s+/
   if (reg3.test(variable)) {
     let vari = variable.replace(reg3, '')
-    vari = vari.slice(0, vari.indexOf('('))
+    vari = vari.split('(')[0].trim()
     result = `exports.${vari} = ${vari}; ${variable}`
+  }
+  // 6)
+  const reg4 = /^class\s+/
+  if (reg4.test(variable)) {
+    let vari = variable.replace(reg4, '')
+    vari = vari.split(' ')[0]
+    result = `var ${vari} = exports.${vari} = ${variable}`
   }
   // 2) 5)
   if (variable[0] === '{') {
