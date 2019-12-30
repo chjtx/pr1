@@ -25,6 +25,7 @@
     "fs-extra": "^7.0.1",
     "node-sass": "^4.11.0",
     "pug": "^2.0.3",
+    "resolve": "^1.14.1",
     "rollup": "^1.10.0",
     "rollup-pluginutils": "^2.6.0",
     "uglify-js": "^3.5.5",

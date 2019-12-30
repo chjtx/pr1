@@ -84,6 +84,11 @@
     import (path, parentPath, noCache) {
       // 因为有些路径需要加上 /index.js ，因此判断删掉 /index.js 是否已存在
       let realParentPath = null
+
+      if (pr1.modules[parentPath]) {
+        parentPath = pr1.modules[parentPath].path
+      }
+
       if (/\/index\.js$/.test(parentPath)) {
         const simpleParentPath = parentPath.replace(/\/index\.js$/, '')
         if (cache[simpleParentPath] && simpleParentPath !== parentPath) {

@@ -1,5 +1,6 @@
 const http = require('http')
 const path = require('path')
+const resolve = require('resolve')
 const { URL } = require('url')
 const fs = require('fs')
 const WebSocket = require('ws')
@@ -139,6 +140,7 @@ module.exports = function server (port, config) {
     let isPr1Module = cookie && checkPr1Module(cookieParams, req.url)
     let isNodeModule = false
     // node_modules 模块
+    
     if (req.url.indexOf('pr1_node=1') > -1 || (cookieParams.importer && cookieParams.importer.indexOf('node_modules') > -1)) {
       const txt = await parseNode(cookieParams.importee, config)
       if (txt) {
@@ -182,25 +184,33 @@ module.exports = function server (port, config) {
         filePath = await config.rollupConfig.plugins.reduce(async (id, plugin) => {
           if (typeof plugin.resolveId === 'function') {
             const result = await plugin.resolveId(importee, importer)
-            return result || id
+            if (typeof result === 'string') {
+              return result
+            } else {
+              return (result && result.id) || id
+            }
           }
           return id
         }, filePath)
       }
 
+      let hasPath = false
+
       try {
+        const extnames = ['.ts', '.js', '.vue', '.json', '.mjs']
         if (path.extname(filePath) === '') {
-          filePath = filePath + '.ts'
-          if (!fs.existsSync(filePath)) {
-            filePath = filePath.slice(0, -2) + 'js'
-          } else if (!fs.existsSync(filePath)) {
-            filePath = filePath.slice(0, -2) + 'vue'
-          } else if (!fs.existsSync(filePath)) {
-            filePath = filePath.slice(0, -3) + 'json'
-          } else if (!fs.existsSync(filePath)) {
-            filePath = filePath.slice(0, -4) + 'mjs'
+          for (let i = 0; i < extnames.length; i++) {
+            if (fs.existsSync(filePath + extnames[i])) {
+              filePath = filePath + extnames[i]
+              hasPath = true
+              break
+            }
+          }
+          if (!hasPath && importee) {
+            filePath = resolve.sync(path.resolve(appRootPath, 'node_modules', importee), { basedir: appRootPath })
           }
         }
+
 
         res.writeHead(200, {
           'Content-Type': 'text/javascript',
@@ -225,9 +235,10 @@ module.exports = function server (port, config) {
         } else {
           uniquePath = pathname
         }
-        res.end(await parsePr1(file.toString(), uniquePath, filePath, config))
+        const absolutePath = uniquePath.indexOf('node_modules') > -1 ? filePath.replace(/\\/g, '/').slice(filePath.indexOf('node_modules')) : uniquePath
+        res.end(await parsePr1(file.toString(), uniquePath, filePath, config, absolutePath))
       } catch (e) {
-        console.error(e.message)
+        console.error(e)
         res.writeHead(500, e.message, { 'Content-Type': 'text/plain' })
         res.end()
       }

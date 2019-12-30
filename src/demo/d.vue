@@ -17,7 +17,7 @@ export default Vue.extend({
 </script>
 
 
-<style lang="sass" scoped>
+<style lang="scss" scoped>
 $abc: #ff00ff;
 h3 {
   color: $abc;

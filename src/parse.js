@@ -5,7 +5,7 @@ const vueComponent = require('./rollup-plugins/rollup-plugin-pr1.js')
 
 const pr1Plugins = [vueComponent()]
 
-function parseModule (txt, url) {
+function parseModule (txt, url, absolutePath) {
   let dealUrl = url
   if (url.indexOf('node_modules') > -1) {
     // 判断是文件夹则加上 index.js
@@ -22,7 +22,7 @@ function parseModule (txt, url) {
   if (/\brequire\(/.test(txt)) {
     txt = parseRequire(txt, dealUrl)
   }
-  return wrap(txt, url)
+  return wrap(txt, url, absolutePath)
 }
 
 function parseRequire (txt, url) {
@@ -32,13 +32,13 @@ function parseRequire (txt, url) {
 }
 
 // 对于 html 这类资源只解释一次 export
-function parseOnceExport (txt, url) {
+function parseOnceExport (txt, url, absolutePath) {
   txt = txt.replace('export default', 'exports.default =')
-  return wrap(txt, url)
+  return wrap(txt, url, absolutePath)
 }
 
-function wrap (txt, url) {
-  return `(async function (_import, module, exports) {${txt};\nObject.freeze(exports)})(pr1.import,(pr1.modules['${url}']={id:'${url}',exports:{}}),pr1.modules['${url}'].exports)`
+function wrap (txt, url, absolutePath) {
+  return `(async function (_import, module, exports) {${txt};\nmodule.exports.default=module.exports.default||module.exports;Object.freeze(module.exports)})(pr1.import,(pr1.modules['${url}']={id:'${url}',path:'${absolutePath}',exports:{}}),pr1.modules['${url}'].exports)`
 }
 
 function type1 (variable, filePath, url) {
@@ -144,6 +144,7 @@ function removeUnnecessary (rs) {
 * 5) export { abc as a }                      => Object.assign(exports, {a: abc} = { a })
 * 6) export class e {}                        => exports.e = e; class e {}
 * 7) export { default as d } from './util.js' => Object.assign(exports, await (async () => { const { default: d } = await _import('./util.js'); return { d }})())
+* 8) export * from 'xxx'                      => Object.assign(exports, (await _import('xxx')))
 */
 function parseExport (i, url) {
   let result = ''
@@ -152,6 +153,13 @@ function parseExport (i, url) {
 
   variable = variable.trim().replace(/;/g, '')
 
+  // 8)
+  if (variable.indexOf('*') > -1) {
+    return {
+      expression: i,
+      result: `Object.assign(exports, (await _import(${variable.split('from')[1].trim()}, '${url}')))`
+    }
+  }
   // 7)
   if (/\bfrom\b/.test(variable)) {
     const rs = parseImport(variable, url)
@@ -179,11 +187,14 @@ function parseExport (i, url) {
   }
   // 2) 5)
   if (variable[0] === '{') {
+    let vari = ''
     if (/\bas\b/.test(variable)) {
       const vars = variable.replace(/\{|\}/g, '').split(',').map(v => v.split(/\bas\b/))
-      variable = vars.map(v => v[0].trim() + ': ' + v[1].trim()).join(', ')
+      vari = '{' + vars.map(v => v[1]
+        ? (v[0].trim() + ': ' + v[1].trim())
+        : v[0].trim()).join(', ') + '}'
     }
-    result = `Object.assign(exports, ${variable}`
+    result = `Object.assign(exports, ${vari || variable}`
     if (variable[variable.length - 1] === '}') {
       result = result + ')'
     } else {
@@ -225,7 +236,7 @@ function switchExport (txt, url) {
   return txt
 }
 
-async function parsePr1 (code, url, id, config) {
+async function parsePr1 (code, url, id, config, absolutePath) {
   // 执行rollup插件的transform
   if (config && config.rollupConfig && config.rollupConfig.plugins) {
     code = await [...pr1Plugins, ...config.rollupConfig.plugins].reduce(async (code, plugin) => {
@@ -238,14 +249,14 @@ async function parsePr1 (code, url, id, config) {
       return code
     }, code)
   }
-  return /\.(html|htm|css)$/.test(url) ? parseOnceExport(code, url) : parseModule(code, url)
+  return /\.(html|htm|css)$/.test(url) ? parseOnceExport(code, url, absolutePath) : parseModule(code, url, absolutePath)
 }
 
 async function parseNode (url, config) {
   try {
     const p = path.resolve(appRootPath, 'node_modules', url)
     if (fs.existsSync(p)) {
-      return parsePr1(fs.readFileSync(p).toString(), 'node_modules/' + url, p, config)
+      return parsePr1(fs.readFileSync(p).toString(), 'node_modules/' + url, p, config, p.slice(p.indexOf('node_modules')))
     }
   } catch (e) {
     return false
