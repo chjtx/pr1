@@ -191,7 +191,7 @@ function parseExport (i, url) {
     if (/\bas\b/.test(variable)) {
       const vars = variable.replace(/\{|\}/g, '').split(',').map(v => v.split(/\bas\b/))
       vari = '{' + vars.map(v => v[1]
-        ? (v[0].trim() + ': ' + v[1].trim())
+        ? (v[1].trim() + ': ' + v[0].trim())
         : v[0].trim()).join(', ') + '}'
     }
     result = `Object.assign(exports, ${vari || variable}`

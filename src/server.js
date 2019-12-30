@@ -93,7 +93,7 @@ module.exports = function server (port, config) {
 
     // pr1-client.js
     if (req.url === '/pr1-client.js') {
-      if (cache['/pr1-client.js']) {
+      if (cache['/pr1-client.js'] && ifNoneMatch) {
         res.writeHead(304)
         res.end()
       } else {
@@ -106,6 +106,10 @@ module.exports = function server (port, config) {
           .replace(/`\{\{configHot\}\}`/g, !!config.hot)
           .replace('`{{hot}}`', `'${config.hot}'`))
       }
+      return
+    } else if (/\.map$/.test(req.url)) {
+      // 不加载.map文件
+      res.end()
       return
     } else if (cache[req.url] && String(fs.statSync(cache[req.url]).mtimeMs) === ifNoneMatch) {
       // 判断缓存
@@ -140,7 +144,6 @@ module.exports = function server (port, config) {
     let isPr1Module = cookie && checkPr1Module(cookieParams, req.url)
     let isNodeModule = false
     // node_modules 模块
-    
     if (req.url.indexOf('pr1_node=1') > -1 || (cookieParams.importer && cookieParams.importer.indexOf('node_modules') > -1)) {
       const txt = await parseNode(cookieParams.importee, config)
       if (txt) {
@@ -211,7 +214,6 @@ module.exports = function server (port, config) {
           }
         }
 
-
         res.writeHead(200, {
           'Content-Type': 'text/javascript',
           'ETag': String(fs.statSync(filePath).mtimeMs)
@@ -223,7 +225,7 @@ module.exports = function server (port, config) {
 
         let uniquePath
         if (resolveId) {
-          if (importee.indexOf('.') > -1) {
+          if (importee.indexOf('.') === 0) {
             const pp = path.resolve(appRootPath, path.dirname(importer), importee)
             const pos = pp.indexOf('node_modules')
             uniquePath = (pos === -1 ? pp.replace(cwd, '') : pp.slice(pos)).replace(/\\/g, '/')

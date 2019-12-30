@@ -1,6 +1,6 @@
 {
   "name": "piaoren",
-  "version": "0.3.13",
+  "version": "0.3.14",
   "description": "前端工程管理工具",
   "main": "index.js",
   "scripts": {
@@ -42,6 +42,7 @@
     "highlight.js": "^9.15.6",
     "jroll": "^2.6.5",
     "markdown-it": "^8.4.2",
+    "pixi.js": "^5.2.0",
     "rollup-plugin-node-resolve": "^4.2.3",
     "rollup-plugin-paths": "0.0.4",
     "vue": "^2.6.10"

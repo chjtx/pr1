@@ -85,9 +85,7 @@
       // 因为有些路径需要加上 /index.js ，因此判断删掉 /index.js 是否已存在
       let realParentPath = null
 
-      if (pr1.modules[parentPath]) {
-        parentPath = pr1.modules[parentPath].path
-      }
+      const parentScriptPath = pr1.modules[parentPath] ? pr1.modules[parentPath].path : parentPath
 
       if (/\/index\.js$/.test(parentPath)) {
         const simpleParentPath = parentPath.replace(/\/index\.js$/, '')
@@ -134,7 +132,7 @@
 
       return new Promise(resolve => {
         const src = uniquePath + (uniquePath.indexOf('?') > -1 ? '&' : '?') +
-          `__________pr1_module=1&importee=${path}&importer=${parentPath}`
+          `__________pr1_module=1&importee=${path}&importer=${parentScriptPath}`
         // document.cookie = `pr1_module=1&importee=${path}&importer=${parentPath}`
         cache[uniquePath].resolve = async (rs) => {
           // vue 组件添加名称
@@ -169,7 +167,7 @@
             }
           }, 0)
         }
-        loadScript(src, parentPath, uniquePath)
+        loadScript(src, parentScriptPath, uniquePath)
       })
     },
     injectStyle (css, pathId) {
