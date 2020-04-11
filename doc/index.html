@@ -343,22 +343,22 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
 <span class="hljs-built_in">module</span>.exports = {
   <span class="hljs-comment">// vendor 子项的第一个值将会整合到 rollup 的 external</span>
   <span class="hljs-comment">// [0]是开发环境用的，[1]是生产环境用的，如果没有[1]生产环境也用[0]</span>
-  vendor: [
+  <span class="hljs-attr">vendor</span>: [
     [<span class="hljs-string">'vue/dist/vue.esm.browser.js'</span>, <span class="hljs-string">'vue/dist/vue.runtime.min.js'</span>]
   ],
   <span class="hljs-comment">// true 表示存在同级目录且同名的 html 和 js 文件会被关联到一起</span>
   <span class="hljs-comment">// 转成 Vue render 组件提高性能，仅生产环境起作用</span>
-  html2VueRender: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">html2VueRender</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-comment">// 热更新 true or reload，如果是字符串 reload，将会刷新浏览器而非 .vue 组件</span>
-  hot: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">hot</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-comment">// dist 打包后文件输出目录，路径应相对于当前配置文件</span>
-  dist: <span class="hljs-string">''</span>,
+  <span class="hljs-attr">dist</span>: <span class="hljs-string">''</span>,
   <span class="hljs-comment">// static 静态文件，路径应相对于 html 入口文件</span>
-  <span class="hljs-keyword">static</span>: [],
+  <span class="hljs-attr">static</span>: [],
   <span class="hljs-comment">// rollup 选项，必须有</span>
-  rollupConfig: {
+  <span class="hljs-attr">rollupConfig</span>: {
     <span class="hljs-comment">// 定义了 vendor，再定义 globals，这样 rollup 会把相关的 vendor 转换成全局变量作为外部资源处理</span>
-    globals: {
+    <span class="hljs-attr">globals</span>: {
       <span class="hljs-string">'vue/dist/vue.esm.browser.js'</span>: <span class="hljs-string">'Vue'</span>
     },
     <span class="hljs-attr">plugins</span>: [
@@ -367,7 +367,7 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
     ]
   },
   <span class="hljs-comment">// babel 选项，不提供将不会进行转码，不使用 uglify 压缩时，可安装 babel 的 minify 插件压缩</span>
-  babelConfig: {
+  <span class="hljs-attr">babelConfig</span>: {
     <span class="hljs-attr">presets</span>: [
       [
         <span class="hljs-string">'@babel/env'</span>, {
@@ -381,15 +381,15 @@ pr1 build page1/index.html page2/index.html <span class="hljs-comment"># 在打�
     ]
   },
   <span class="hljs-comment">// uglify 选项，不提供将不会压缩，如果 babel 转码后仍存在 ES6+ 代码，uglify 解释不了将会压缩失败</span>
-  uglifyConfig: {
+  <span class="hljs-attr">uglifyConfig</span>: {
     <span class="hljs-attr">toplevel</span>: <span class="hljs-literal">true</span>
   },
   <span class="hljs-comment">// 打包前的钩子</span>
-  beforeBuild: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">originDir</span>) </span>{
+  <span class="hljs-attr">beforeBuild</span>: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">originDir</span>) </span>{
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`开始打包：`</span>.green + <span class="hljs-string">`<span class="hljs-subst">${originDir}</span>`</span>.cyan)
   },
   <span class="hljs-comment">// 打包后的钩子</span>
-  afterBuild: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">distDir</span>) </span>{
+  <span class="hljs-attr">afterBuild</span>: <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">distDir</span>) </span>{
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`完成打包：`</span>.green + <span class="hljs-string">`<span class="hljs-subst">${distDir}</span>`</span>.cyan)
   }
 }
@@ -476,7 +476,7 @@ npm i rollup-plugin-typescript typescript tslib
 <span class="hljs-built_in">module</span>.exports = {
   <span class="hljs-attr">rollupConfig</span>: {
     <span class="hljs-comment">// ...</span>
-    plugins: [
+    <span class="hljs-attr">plugins</span>: [
       typescript({
         <span class="hljs-attr">target</span>: <span class="hljs-string">'ESNext'</span>,
       })
@@ -585,6 +585,10 @@ e`</span> + <span class="hljs-string">`xport default { b: 1 }
 </li>
 </ul>
 <h2>更新日志</h2>
+<p>### v0.3.16 (2020-04-11)</p>
+<ul>
+<li>修复<code>exports { default } from 'xxx'</code>解释报<code>default</code>是保留字的错误问题</li>
+</ul>
 <p>### (2019-12-30)</p>
 <ul>
 <li>
@@ -795,11 +799,11 @@ e`</span> + <span class="hljs-string">`xport default { b: 1 }
 <p>MIT</p>
 </div>
   <div id="ad">
-    <a class="big" target="_blank" href="https://goodgoodsbook.com/?from=pr1">
-      <img src="http://www.chjtx.com/assets/images/gg-big.jpg?v2">
+    <a class="big" target="_blank" href="https://www.taptap.com/app/174349">
+      <img src="http://www.chjtx.com/assets/images/gg-big3.jpg">
     </a>
-    <a class="small" target="_blank" href="https://goodgoodsbook.com/?from=pr1">
-      <img src="http://www.chjtx.com/assets/images/gg-small.jpg?v2">
+    <a class="small" target="_blank" href="https://www.taptap.com/app/174349">
+      <img src="http://www.chjtx.com/assets/images/gg-small3.jpg">
     </a>
   </div>
 </body>

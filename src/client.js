@@ -93,7 +93,7 @@
           realParentPath = simpleParentPath
         }
       }
-      const uniquePath = resolvePath(path, parentPath)
+      const uniquePath = resolvePath(path, parentScriptPath)
 
       if (pr1.modules[uniquePath] && !noCache) {
         return pr1.modules[uniquePath].exports

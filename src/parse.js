@@ -163,9 +163,20 @@ function parseExport (i, url) {
   // 7)
   if (/\bfrom\b/.test(variable)) {
     const rs = parseImport(variable, url)
-    return {
-      expression: i,
-      result: `Object.assign(exports, await (async () => {${rs.result}; return ${removeUnnecessary(rs.result)}})())`
+
+    // export { default } from ...
+    if (/\{\s+default\s+\}/.test(variable)) {
+      return {
+        expression: i,
+        result: `Object.assign(exports, await (async () => {
+          ${rs.result.replace(/\{\s+default\s+\}/, '_default')}.default;
+           return { default: _default } })())`
+      }
+    } else {
+      return {
+        expression: i,
+        result: `Object.assign(exports, await (async () => {${rs.result}; return ${removeUnnecessary(rs.result)}})())`
+      }
     }
   }
   // 1)
